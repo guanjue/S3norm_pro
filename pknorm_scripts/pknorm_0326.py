@@ -120,6 +120,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 
 
 	sig1_pk_num = np.sum(sig1_binary)
+	print('sig1_pk_num')
+	print(sig1_pk_num)
 
 	### if pk number < 10000 then use rank for sig2
 	if sig1_pk_num <= rank_lim:
@@ -143,6 +145,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 
 
 	sig2_pk_num = np.sum(sig2_binary)
+	print('sig2_pk_num')
+	print(sig2_pk_num)
 
 	### if pk number < 10000 then use rank for sig2
 	if sig2_pk_num <= rank_lim:
