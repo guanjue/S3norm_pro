@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from scipy.stats import norm, nbinom
+from scipy.stats import norm, nbinom, pearsonr
 
 ################################################################################################
 ### read 2d array
@@ -99,9 +99,10 @@ def nb_cpf(signal_vec):
 
 ################################################################################################
 ### PKnorm
-def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_method):
+def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_folder, p_method):
 	sig1_output_name = sig1_wg_raw.split('.')[0]
 	sig2_output_name = sig2_wg_raw.split('.')[0]
+	sig3_output_name = sig3_wg_raw.split('.')[0]
 
 	### read whole genome signals
 	sig1 = read2d_array(sig1_wg_raw, float)
@@ -138,9 +139,26 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 	print(sum(sig2_binary))
 	print(sig2_pk_num)
 
+	if p_method == 'nb':
+		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig3_wg_raw + ' ' + sig3_wg_raw + '.nbp.txt', shell=True)
+		sig3_p = read2d_array(sig3_wg_raw + '.nbp.txt', float)
+		sig3_z_p_fdr = p_adjust(sig3_p, 'fdr')
+		sig3_binary = sig3_z_p_fdr < fdr_thresh
+	elif p_method == 'z':
+		sig3_log2 = np.log2(sig3+0.01)
+		sig3_z_p_fdr = p_adjust(1 - norm.cdf((sig3_log2 - np.mean(sig3_log2))/ np.std(sig3_log2)), 'fdr')
+		sig3_binary = sig3_z_p_fdr < fdr_thresh
+
+	sig3_pk_num = np.sum(sig3_binary)
+
+	print(sum(sig3_binary))
+	print(sig3_pk_num)
+
 	### peak region (both != 0 in sig1 & sig2)
-	peak_binary = (sig1_binary[:,0] | sig2_binary[:,0])
+	peak_binary = (sig1_binary[:,0] & sig2_binary[:,0])
 	print(np.sum(peak_binary))
+	peak_binary_od = (sig1_binary[:,0] & sig3_binary[:,0])
+	print(np.sum(peak_binary_od))
 
 	### background region (both == 0 in sig1 & sig2)
 	bg_binary = ~(sig1_binary[:,0] | sig2_binary[:,0])
@@ -151,8 +169,14 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 	sig2_cpk = sig2[peak_binary,0]
 	sig2_cpk = np.reshape(sig2_cpk, (sig2_cpk.shape[0],1))
 
-	cpk_table = np.concatenate((sig1_cpk, sig2_cpk), axis=1)
-	write2d_array(cpk_table, sig1_output_name+'cpk_table.txt')
+	cor = pearsonr(sig1, sig2)
+	print('Pearson correlation:')
+	print(cor)
+
+	all_info = np.array([[cor, sig1_pk_num, sig2_pk_num, sig3_pk_num, peak_binary, peak_binary_od]])
+
+	#cpk_table = np.concatenate((sig1_cpk, sig2_cpk), axis=1)
+	write2d_array(all_info, sig1_output_name+'cpk_table.txt')
 
 ############################################################################
 
@@ -160,7 +184,7 @@ import getopt
 import sys
 def main(argv):
 	try:
-		opts, args = getopt.getopt(argv,"hr:t:f:s:p:")
+		opts, args = getopt.getopt(argv,"hr:t:o:f:s:p:")
 	except getopt.GetoptError:
 		print 'time python pknorm_check_dif.py -r reference_signal_track.txt -t target_signal_track.txt -m moment -i initial_B -f fdrthresh -n plotpoints_num -l rank_lim -a upperlimit -b lowerlimit -s script_folder-p p-value_method'
 		sys.exit(2)
@@ -172,6 +196,8 @@ def main(argv):
 			sig1_wg_raw=str(arg.strip())				
 		elif opt=="-t":
 			sig2_wg_raw=str(arg.strip())
+		elif opt=="-o":
+			sig3_wg_raw=str(arg.strip())
 		elif opt=="-f":
 			fdr_thresh=float(arg.strip())
 		elif opt=="-s":
@@ -179,7 +205,7 @@ def main(argv):
 		elif opt=="-p":
 			p_method=str(arg.strip())
 
-	pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_method)
+	pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_folder, p_method)
 
 if __name__=="__main__":
 	main(sys.argv[1:])
