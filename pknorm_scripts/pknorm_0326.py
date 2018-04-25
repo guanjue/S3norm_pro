@@ -127,6 +127,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		print('rank sig1')
 		sig1_binary = sig1 > sig1_thresh
 
+	print('sig1_pk_num')
 	print(sum(sig1_binary))
 	print(sig1_pk_num)
 
@@ -149,6 +150,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		print('rank sig2')
 		sig2_binary = sig2 > sig2_thresh
 
+	print('sig2_pk_num')
 	print(sum(sig2_binary))
 	print(sig2_pk_num)
 
