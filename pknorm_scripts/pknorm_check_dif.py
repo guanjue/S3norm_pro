@@ -114,7 +114,8 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
 	elif p_method == 'z':
-		sig1_z_p_fdr = p_adjust(1 - norm.cdf((sig1 - np.mean(sig1))/ np.std(sig1)), 'fdr')
+		sig1_log2 = np.log2(sig1+0.01)
+		sig1_z_p_fdr = p_adjust(1 - norm.cdf((sig1_log2 - np.mean(sig1_log2))/ np.std(sig1_log2)), 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
 
 	sig1_pk_num = np.sum(sig1_binary)
@@ -128,7 +129,8 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
 		sig2_binary = sig2_z_p_fdr < fdr_thresh
 	elif p_method == 'z':
-		sig2_z_p_fdr = p_adjust(1 - norm.cdf((sig2 - np.mean(sig2))/ np.std(sig2)), 'fdr')
+		sig2_log2 = np.log2(sig2+0.01)
+		sig2_z_p_fdr = p_adjust(1 - norm.cdf((sig2_log2 - np.mean(sig2_log2))/ np.std(sig2_log2)), 'fdr')
 		sig2_binary = sig2_z_p_fdr < fdr_thresh
 
 	sig2_pk_num = np.sum(sig2_binary)
