@@ -117,14 +117,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 		sig1_z_p_fdr = p_adjust(1 - norm.cdf((sig1 - np.mean(sig1))/ np.std(sig1)), 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
 
-
 	sig1_pk_num = np.sum(sig1_binary)
-
-	### if pk number < 10000 then use rank for sig2
-	if sig1_pk_num <= rank_lim:
-		sig1_thresh = np.sort(sig1, axis=None)[-rank_lim]
-		print('rank sig1')
-		sig1_binary = sig1 > sig1_thresh
 
 	print(sum(sig1_binary))
 	print(sig1_pk_num)
@@ -138,14 +131,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 		sig2_z_p_fdr = p_adjust(1 - norm.cdf((sig2 - np.mean(sig2))/ np.std(sig2)), 'fdr')
 		sig2_binary = sig2_z_p_fdr < fdr_thresh
 
-
 	sig2_pk_num = np.sum(sig2_binary)
-
-	### if pk number < 10000 then use rank for sig2
-	if sig2_pk_num <= rank_lim:
-		sig2_thresh = np.sort(sig2, axis=None)[-rank_lim]
-		print('rank sig2')
-		sig2_binary = sig2 > sig2_thresh
 
 	print(sum(sig2_binary))
 	print(sig2_pk_num)
