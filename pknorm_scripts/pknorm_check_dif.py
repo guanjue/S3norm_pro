@@ -137,7 +137,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 	print(sig2_pk_num)
 
 	### peak region (both != 0 in sig1 & sig2)
-	peak_binary = (sig1_binary[:,0] & sig2_binary[:,0])
+	peak_binary = (sig1_binary[:,0] | sig2_binary[:,0])
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
