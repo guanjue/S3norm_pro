@@ -99,7 +99,7 @@ def nb_cpf(signal_vec):
 
 ################################################################################################
 ### PKnorm
-def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, rank_lim, upperlim, lowerlim, script_folder):
+def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, rank_lim, upperlim, lowerlim, script_folder, p_method):
 	sig1_output_name = sig1_wg_raw.split('.')[0]
 	sig2_output_name = sig2_wg_raw.split('.')[0]
 
@@ -107,7 +107,6 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	sig1 = read2d_array(sig1_wg_raw, float)
 	sig2 = read2d_array(sig2_wg_raw, float)
 	
-	p_method = 'nb'
 	### read whole genome binary label
 	if p_method == 'nb':
 		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
@@ -286,14 +285,14 @@ import getopt
 import sys
 def main(argv):
 	try:
-		opts, args = getopt.getopt(argv,"hr:t:m:i:f:n:l:a:b:s:")
+		opts, args = getopt.getopt(argv,"hr:t:m:i:f:n:l:a:b:s:p:")
 	except getopt.GetoptError:
-		print 'time python pknorm_0326.py -r reference_signal_track.txt -t target_signal_track.txt -m moment -i initial_B -f fdrthresh -n plotpoints_num -l rank_lim -a upperlimit -b lowerlimit -s script_folder'
+		print 'time python pknorm_0326.py -r reference_signal_track.txt -t target_signal_track.txt -m moment -i initial_B -f fdrthresh -n plotpoints_num -l rank_lim -a upperlimit -b lowerlimit -s script_folder-p p-value_method'
 		sys.exit(2)
 
 	for opt,arg in opts:
 		if opt=="-h":
-			print 'time python pknorm_0326.py -r reference_signal_track.txt -t target_signal_track.txt -m moment -i initial_B -f fdrthresh -n plotpoints_num -l rank_lim -a upperlimit -b lowerlimit -s script_folder'		
+			print 'time python pknorm_0326.py -r reference_signal_track.txt -t target_signal_track.txt -m moment -i initial_B -f fdrthresh -n plotpoints_num -l rank_lim -a upperlimit -b lowerlimit -s script_folder -p p-value_method'		
 		elif opt=="-r":
 			sig1_wg_raw=str(arg.strip())				
 		elif opt=="-t":
@@ -314,9 +313,10 @@ def main(argv):
 			lowerlim=float(arg.strip())
 		elif opt=="-s":
 			script_folder=str(arg.strip())
+		elif opt=="-p":
+			p_method=str(arg.strip())
 
-
-	pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, rank_lim, upperlim, lowerlim, script_folder)
+	pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, rank_lim, upperlim, lowerlim, script_folder, p_method)
 
 if __name__=="__main__":
 	main(sys.argv[1:])
