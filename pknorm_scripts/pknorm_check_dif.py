@@ -136,7 +136,19 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, fdr_thresh, script_folder, p_meth
 	print(sum(sig2_binary))
 	print(sig2_pk_num)
 
+	### peak region (both != 0 in sig1 & sig2)
+	peak_binary = (sig1_binary[:,0] & sig2_binary[:,0])
+	print(np.sum(peak_binary))
 
+	### background region (both == 0 in sig1 & sig2)
+	bg_binary = ~(sig1_binary[:,0] | sig2_binary[:,0])
+	print(np.sum(bg_binary))
+
+	sig1_cpk = sig1[peak_binary,0]
+	sig2_cpk = sig2[peak_binary,0]
+
+	cpk_table = np.concatenate((sig1_cpk, sig2_cpk), axis=1)
+	write2d_array(cpk_table, sig1_output_name+'cpk_table.txt')
 
 ############################################################################
 
