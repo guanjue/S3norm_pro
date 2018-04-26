@@ -111,7 +111,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_f
 	
 	### read whole genome binary label
 	if p_method == 'nb':
-		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
+		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
 		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)
 		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
@@ -141,7 +141,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_f
 	print(sig2_pk_num)
 
 	if p_method == 'nb':
-		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig3_wg_raw + ' ' + sig3_wg_raw + '.nbp.txt', shell=True)
+		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig3_wg_raw + ' ' + sig3_wg_raw + '.nbp.txt', shell=True)
 		sig3_p = read2d_array(sig3_wg_raw + '.nbp.txt', float)
 		sig3_z_p_fdr = p_adjust(sig3_p, 'fdr')
 		sig3_binary = sig3_z_p_fdr < fdr_thresh
