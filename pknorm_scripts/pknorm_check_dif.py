@@ -175,7 +175,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_f
 	print('Pearson correlation:')
 	print(cor)
 
-	all_info = np.array([[cor[0], cor_od[0], sig1_pk_num, sig2_pk_num, sig3_pk_num, np.sum(peak_binary), np.sum(peak_binary_od)]])
+	all_info = np.array([[cor[0][0], cor_od[0][0], sig1_pk_num, sig2_pk_num, sig3_pk_num, np.sum(peak_binary), np.sum(peak_binary_od)]])
 
 	#cpk_table = np.concatenate((sig1_cpk, sig2_cpk), axis=1)
 	write2d_array(all_info, sig1_output_name+'cpk_table.txt')
