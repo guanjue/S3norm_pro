@@ -107,6 +107,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_f
 	### read whole genome signals
 	sig1 = read2d_array(sig1_wg_raw, float)
 	sig2 = read2d_array(sig2_wg_raw, float)
+	sig3 = read2d_array(sig3_wg_raw, float)
 	
 	### read whole genome binary label
 	if p_method == 'nb':
