@@ -100,9 +100,9 @@ def nb_cpf(signal_vec):
 ################################################################################################
 ### PKnorm
 def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_folder, p_method):
-	sig1_output_name = sig1_wg_raw.split('.')[0]
-	sig2_output_name = sig2_wg_raw.split('.')[0]
-	sig3_output_name = sig3_wg_raw.split('.')[0]
+	sig1_output_name = sig1_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[2]
+	sig2_output_name = sig2_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[2]
+	sig3_output_name = sig3_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[2]
 
 	### read whole genome signals
 	sig1 = read2d_array(sig1_wg_raw, float)
