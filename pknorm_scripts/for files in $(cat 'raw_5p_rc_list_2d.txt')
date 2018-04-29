@@ -1,0 +1,8 @@
+for files in $(cat 'raw_5p_rc_list_2d.txt')
+do
+        f1=$(echo "$files" | awk -F '-' '{print $1}')
+        f2=$(echo "$files" | awk -F '-' '{print $2}')
+        ct=$(echo "$f1" | awk -F '.' '{print $1"_"$7}')
+        echo $ct
+        ls $ct'.pknorm.txt'
+done
