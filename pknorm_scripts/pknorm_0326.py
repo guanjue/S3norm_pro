@@ -186,8 +186,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	small_num = (sig1_cpk_mean*sig2_cbg_mean - sig1_cbg_mean*sig2_cpk_mean) / ((sig1_cbg_mean-sig1_cpk_mean)-(sig2_cbg_mean-sig2_cpk_mean))
 	if small_num >1:
 		small_num = 1.0
-	elif small_num <0.001:
-		small_num = 0.001
+	elif small_num <0.01:
+		small_num = 0.01
 	print('added small number: '+str(small_num))
 	### get transformation factor
 

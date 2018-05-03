@@ -13,6 +13,7 @@ sig_var = var(sig_non0)
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))
 
 sig_prob = sig_mean / sig_var
+
 if (sig_prob<0.1){
 	print('use lower bound for nbp prob')
 	sig_prob = 0.1
@@ -33,6 +34,7 @@ sig_non0_bg_var = var(sig_non0_bg)
 print(paste('2nd round check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))
 
 sig_prob_2nd = sig_non0_bg_mean / sig_non0_bg_var
+
 if (sig_prob_2nd<0.1){
 	print('use lower bound for nbp prob')
 	sig_prob_2nd = 0.1
