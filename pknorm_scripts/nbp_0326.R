@@ -27,7 +27,7 @@ sig_size = sig_mean * sig_prob / (1-sig_prob)
 nb_pval = apply(as.matrix(sig), MARGIN=1, function(x) pnbinom(x[1], sig_size, sig_prob, lower.tail=FALSE) )
 
 ### 2nd round
-sig_non0_bg = sig_non0[nb_pval>=0.001,]
+sig_non0_bg = sig_non0[nb_pval>=0.001]
 sig_non0_bg_mean = mean(sig_non0_bg)
 sig_non0_bg_var = var(sig_non0_bg)
 print(paste('2nd round check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))
