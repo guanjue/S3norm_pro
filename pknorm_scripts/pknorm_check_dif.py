@@ -156,18 +156,22 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_f
 	print(sig3_pk_num)
 
 	### peak region (both != 0 in sig1 & sig2)
-	peak_binary = (sig1_binary[:,0] & sig2_binary[:,0])
-	print(np.sum(peak_binary))
-	peak_binary_od = (sig1_binary[:,0] & sig3_binary[:,0])
-	print(np.sum(peak_binary_od))
+	peak_binary_overlap = as.logical(sig1_binary[:,0] * sig2_binary[:,0])
+	peak_binary_union = as.logical(sig1_binary[:,0] + sig2_binary[:,0])
+	peak_jaccard_index = peak_binary_overlap/peak_binary_union
+	print(np.sum(peak_jaccard_index))
+	peak_binary_overlap_od = as.logical(sig1_binary[:,0] * sig3_binary[:,0])
+	peak_binary_union_od = as.logical(sig1_binary[:,0] + sig3_binary[:,0])
+	peak_jaccard_index_od = peak_binary_overlap_od/peak_binary_union_od
+	print(np.sum(peak_jaccard_index_od))
 
 	### background region (both == 0 in sig1 & sig2)
 	bg_binary = ~(sig1_binary[:,0] | sig2_binary[:,0])
 	print(np.sum(bg_binary))
 
-	sig1_cpk = sig1[peak_binary,0]
+	sig1_cpk = sig1[peak_binary_overlap,0]
 	sig1_cpk = np.reshape(sig1_cpk, (sig1_cpk.shape[0],1))
-	sig2_cpk = sig2[peak_binary,0]
+	sig2_cpk = sig2[peak_binary_overlap,0]
 	sig2_cpk = np.reshape(sig2_cpk, (sig2_cpk.shape[0],1))
 
 	cor = pearsonr(sig1, sig2)
@@ -175,7 +179,7 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_f
 	print('Pearson correlation:')
 	print(cor)
 
-	all_info = np.array([[cor[0][0], cor_od[0][0], sig1_pk_num, sig2_pk_num, sig3_pk_num, np.sum(peak_binary), np.sum(peak_binary_od)]])
+	all_info = np.array([[cor[0][0], cor_od[0][0], sig1_pk_num, sig2_pk_num, sig3_pk_num, np.sum(peak_jaccard_index), np.sum(peak_jaccard_index_od)]])
 
 	#cpk_table = np.concatenate((sig1_cpk, sig2_cpk), axis=1)
 	write2d_array(all_info, sig1_output_name+'.cpk_table.txt')
