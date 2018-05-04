@@ -227,9 +227,6 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	sig1_1log_bg_m_od = np.log2(np.mean(sig1[bg_binary,0])+small_num)
 	sig2_1log_bg_m_od = np.log2(np.mean(sig2[bg_binary,0])+small_num)
 
-	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary_n,0]))
-	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary_n,0]))
-
 	###FRiP score
 	sig2_norm_FRiP = np.sum(sig2_norm[(sig2_binary[:,0]!=0),0]) / np.sum(sig2_norm)
 	sig2_FRiP = np.sum(sig2[(sig2_binary[:,0]!=0),0]) / np.sum(sig2)
@@ -247,9 +244,13 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	peak_binary_n = (sig1_binary[:,0] & sig2_norm_binary[:,0])
 	peak_binary_union_n = (sig1_binary[:,0] | sig2_norm_binary[:,0])
 	print(np.sum(peak_binary))
+
 	### background region (both == 0 in sig1 & sig2)
 	bg_binary_n = ~(sig1_binary[:,0] | sig2_norm_binary[:,0])
 	print(np.sum(bg_binary))
+
+	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary_n,0]))
+	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary_n,0]))
 
 	jaccard_index = float(np.sum(peak_binary))/(np.sum(peak_binary_union))
 	jaccard_index_n = float(np.sum(peak_binary_n))/(np.sum(peak_binary_union_n))
