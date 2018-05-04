@@ -160,10 +160,17 @@ def pknorm_check_dif(sig1_wg_raw, sig2_wg_raw, sig3_wg_raw, fdr_thresh, script_f
 	peak_binary_union = (sig1_binary[:,0] | sig2_binary[:,0])
 	peak_jaccard_index = np.sum(peak_binary_overlap)/np.sum(peak_binary_union)
 	print(np.sum(peak_binary_overlap))
+	print(np.sum(peak_binary_union))
+	print(np.sum(peak_binary_overlap)/np.sum(peak_binary_union))
+	print(float(np.sum(peak_binary_overlap))/np.sum(peak_binary_union))
+
 	peak_binary_overlap_od = (sig1_binary[:,0] & sig3_binary[:,0])
 	peak_binary_union_od = (sig1_binary[:,0] | sig3_binary[:,0])
 	peak_jaccard_index_od = np.sum(peak_binary_overlap_od)/np.sum(peak_binary_union_od)
 	print(np.sum(peak_binary_overlap_od))
+	print(np.sum(peak_binary_union_od))
+	print(np.sum(peak_binary_overlap_od)/np.sum(peak_binary_union_od))
+	print(float(np.sum(peak_binary_overlap_od))/np.sum(peak_binary_union_od))
 
 	### background region (both == 0 in sig1 & sig2)
 	bg_binary = ~(sig1_binary[:,0] | sig2_binary[:,0])
