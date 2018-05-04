@@ -241,7 +241,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		sig2_norm_p = read2d_array(sig2_output_name + '.pknorm.txt' + '.nbp.txt', float)
 		sig2_norm_p_fdr = p_adjust(sig2_norm_p, 'fdr')
 		sig2_norm_binary = sig2_norm_p_fdr < fdr_thresh
-
+	sig2_norm_pk_num = np.sum(sig2_norm_binary)
 	### peak region (both != 0 in sig1 & sig2)
 	peak_binary_n = (sig1_binary[:,0] & sig2_norm_binary[:,0])
 	peak_binary_union_n = (sig1_binary[:,0] | sig2_norm_binary[:,0])
@@ -251,9 +251,9 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(np.sum(bg_binary))
 
 	jaccard_index = float(np.sum(peak_binary))/(np.sum(peak_binary_union))
-	jaccard_index_n = float(np.sum(peak_binary))/(np.sum(peak_binary_union))
+	jaccard_index_n = float(np.sum(peak_binary_n))/(np.sum(peak_binary_union_n))
 	### write output: sf & FRiP
-	info = np.array([[total_mean_sf, B, A], [sig1_FRiP, sig2_norm_FRiP, sig2_FRiP], [1, jaccard_index_n, jaccard_index]])
+	info = np.array([[total_mean_sf, B, A], [sig1_FRiP, sig2_norm_FRiP, sig2_FRiP], [1, jaccard_index_n, jaccard_index], [np.sum(peak_binary), sig1_pk_num, sig2_pk_num], [np.sum(peak_binary_n), sig1_pk_num, sig2_norm_pk_num]])
 	write2d_array(info, sig2_output_name + '.info.txt')
 
 
