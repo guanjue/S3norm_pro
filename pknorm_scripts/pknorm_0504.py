@@ -199,8 +199,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### transformation
 	sig2_norm = []
 	for s in sig2[:,0]:
-		#s_norm = (A * (s+small_num)**B) - small_num
-		s_norm = (A * (s)**B)
+		s_norm = (A * (s+small_num)**B) - small_num
+		#s_norm = (A * (s)**B)
 		if s_norm > upperlim:
 			s_norm = upperlim
 		elif s_norm < lowerlim:
@@ -249,8 +249,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	bg_binary_n = ~(sig1_binary[:,0] | sig2_norm_binary[:,0])
 	print(np.sum(bg_binary))
 
-	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary_n,0]))
-	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary_n,0]))
+	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary_n,0])+small_num)
+	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary_n,0])+small_num)
 
 	jaccard_index = float(np.sum(peak_binary))/(np.sum(peak_binary_union))
 	jaccard_index_n = float(np.sum(peak_binary_n))/(np.sum(peak_binary_union_n))
