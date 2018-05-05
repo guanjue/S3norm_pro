@@ -169,12 +169,15 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
-	bg_binary = ~(sig1_binary[:,0] | sig2_binary[:,0])
+	bg_binary = (~(sig1_binary[:,0] | sig2_binary[:,0])) 
 	print(np.sum(bg_binary))
 
 	### get common bg pk
 	sig1_cbg = sig1[bg_binary,0]
 	sig2_cbg = sig2[bg_binary,0]
+	used_id_cbg = (sig1_cbg>0) & (sig2_cbg>0)
+	sig1_cbg = sig1_cbg[used_id_cbg]
+	sig2_cbg = sig2_cbg[used_id_cbg]
 	sig1_cpk = sig1[peak_binary,0]
 	sig2_cpk = sig2[peak_binary,0]
 
@@ -192,15 +195,16 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print('added small number: '+str(small_num))
 	### get transformation factor
 
-	AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500)
+	#AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500)
+	AB = NewtonRaphsonMethod(sig1_cpk,sig1_cbg, sig2_cpk,sig2_cbg, 1.0, 2.0, moment, 1e-5, 500)
 	A=AB[0]
 	B=AB[1]
 	print('transformation: '+'B: '+str(B)+'; A: '+str(A))
 	### transformation
 	sig2_norm = []
 	for s in sig2[:,0]:
-		s_norm = (A * (s+small_num)**B) - small_num
-		#s_norm = (A * (s)**B)
+		#s_norm = (A * (s+small_num)**B) - small_num
+		s_norm = (A * (s)**B)
 		if s_norm > upperlim:
 			s_norm = upperlim
 		elif s_norm < lowerlim:
