@@ -109,7 +109,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	
 	### read whole genome binary label
 	if p_method == 'nb':
-		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
+		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
 		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)
 		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
@@ -139,7 +139,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(sig1_pk_num)
 
 	if p_method == 'nb':
-		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.nbp.txt', shell=True)
+		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.nbp.txt', shell=True)
 		sig2_p = read2d_array(sig2_wg_raw + '.nbp.txt', float)
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
 		sig2_binary = sig2_z_p_fdr < fdr_thresh
@@ -225,11 +225,11 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	sig2_norm = np.reshape(sig2_norm, (sig2_norm.shape[0],1))
 
 	### rotated means for sig2 for plotting
-	sig1_1log_pk_m_od = np.log2(np.mean(sig1[peak_binary,0])+small_num)
-	sig2_1log_pk_m_od = np.log2(np.mean(sig2[peak_binary,0])+small_num)
+	sig1_1log_pk_m_od = np.log2(np.mean(sig1[peak_binary,0]))
+	sig2_1log_pk_m_od = np.log2(np.mean(sig2[peak_binary,0]))
 
-	sig1_1log_bg_m_od = np.log2(np.mean(sig1[bg_binary,0])+small_num)
-	sig2_1log_bg_m_od = np.log2(np.mean(sig2[bg_binary,0])+small_num)
+	sig1_1log_bg_m_od = np.log2(np.mean(sig1[bg_binary,0][used_id_cbg]))
+	sig2_1log_bg_m_od = np.log2(np.mean(sig2[bg_binary,0][used_id_cbg]))
 
 	###FRiP score
 	sig2_norm_FRiP = np.sum(sig2_norm[(sig2_binary[:,0]!=0),0]) / np.sum(sig2_norm)
@@ -252,9 +252,9 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### background region (both == 0 in sig1 & sig2)
 	bg_binary_n = ~(sig1_binary[:,0] | sig2_norm_binary[:,0])
 	print(np.sum(bg_binary))
-
-	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary_n,0])+small_num)
-	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary_n,0])+small_num)
+	
+	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary_n,0]))
+	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary_n,0][used_id_cbg]))
 
 	jaccard_index = float(np.sum(peak_binary))/(np.sum(peak_binary_union))
 	jaccard_index_n = float(np.sum(peak_binary_n))/(np.sum(peak_binary_union_n))
