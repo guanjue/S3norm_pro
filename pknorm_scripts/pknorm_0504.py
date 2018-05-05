@@ -175,7 +175,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### get common bg pk
 	sig1_cbg = sig1[bg_binary,0]
 	sig2_cbg = sig2[bg_binary,0]
-	used_id_cbg = (sig1_cbg>0) & (sig2_cbg>0)
+	used_id_cbg = (sig1_cbg[:,0]>0) & (sig2_cbg[:,0]>0)
 	sig1_cbg = sig1_cbg[used_id_cbg]
 	sig2_cbg = sig2_cbg[used_id_cbg]
 	sig1_cpk = sig1[peak_binary,0]
