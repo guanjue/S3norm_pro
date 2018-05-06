@@ -5,9 +5,9 @@ signal_track_file = args[1]
 output_name = args[2]
 
 sig = scan(signal_track_file)
-thesh = -1
+thesh = 5
 
-sig_non0 = sig[sig>thesh]
+sig_non0 = sig[sig>=thesh]
 sig_mean = mean(sig_non0)
 sig_var = var(sig_non0)
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))

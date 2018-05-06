@@ -100,8 +100,8 @@ def nb_cpf(signal_vec):
 ################################################################################################
 ### PKnorm
 def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, rank_lim, upperlim, lowerlim, script_folder, p_method):
-	sig1_output_name = sig1_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[2]
-	sig2_output_name = sig2_wg_raw.split('.')[0]+'_'+sig2_wg_raw.split('.')[2]
+	sig1_output_name = sig1_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[1]
+	sig2_output_name = sig2_wg_raw.split('.')[0]+'_'+sig2_wg_raw.split('.')[1]
 
 	### read whole genome signals
 	sig1 = read2d_array(sig1_wg_raw, float)
@@ -197,8 +197,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print('added small number: '+str(small_num))
 	### get transformation factor
 
-	#AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500)
-	AB = NewtonRaphsonMethod(sig1_cpk,sig1_cbg, sig2_cpk,sig2_cbg, 1.0, 2.0, moment, 1e-5, 500)
+	AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500)
+	#AB = NewtonRaphsonMethod(sig1_cpk,sig1_cbg, sig2_cpk,sig2_cbg, 1.0, 2.0, moment, 1e-5, 500)
 	A=AB[0]
 	B=AB[1]
 	print('transformation: '+'B: '+str(B)+'; A: '+str(A))
