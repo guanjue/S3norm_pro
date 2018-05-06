@@ -5,7 +5,7 @@ signal_track_file = args[1]
 output_name = args[2]
 
 sig = scan(signal_track_file)
-thesh = 0
+thesh = -1
 
 sig_non0 = sig[sig>thesh]
 sig_mean = mean(sig_non0)

@@ -100,8 +100,8 @@ def nb_cpf(signal_vec):
 ################################################################################################
 ### PKnorm
 def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, rank_lim, upperlim, lowerlim, script_folder, p_method):
-	sig1_output_name = sig1_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[2]
-	sig2_output_name = sig2_wg_raw.split('.')[0]+'_'+sig2_wg_raw.split('.')[2]
+	sig1_output_name = sig1_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[1]
+	sig2_output_name = sig2_wg_raw.split('.')[0]+'_'+sig2_wg_raw.split('.')[1]
 
 	### read whole genome signals
 	sig1 = read2d_array(sig1_wg_raw, float)
@@ -111,20 +111,18 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	if p_method == 'nb':
 		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
 		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)
-		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
+		sig1_z_p_fdr = (p_adjust(sig1_p, 'fdr')) * 1.0
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
-	if p_method == 'gmmnb':
-		call('Rscript ' + script_folder + 'gmmnbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
-		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)
-		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
-		sig1_binary = sig1_z_p_fdr < fdr_thresh
+	if p_method == 'gmm':
+		call('Rscript ' + script_folder + 'gmm_0506.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.gmm.txt', shell=True)
+		sig1_binary = read2d_array(sig1_wg_raw + '.gmm.txt', float)
 	elif p_method == 'z':
 		sig1_log2 = np.log2(sig1+0.01)
 		sig1_z_p_fdr = p_adjust(1 - norm.cdf((sig1_log2 - np.mean(sig1_log2))/ np.std(sig1_log2)), 'fdr')
-		sig1_binary = sig1_z_p_fdr < fdr_thresh
+		sig1_binary = (sig1_z_p_fdr < fdr_thresh) * 1.0
 
 
-	sig1_pk_num = np.sum(sig1_binary)
+	sig1_pk_num = np.sum(sig1_binary==1.0)
 	print('sig1_pk_num')
 	print(sig1_pk_num)
 
@@ -132,7 +130,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	if sig1_pk_num <= rank_lim:
 		sig1_thresh = np.sort(sig1, axis=None)[-rank_lim]
 		print('rank sig1')
-		sig1_binary = sig1 > sig1_thresh
+		sig1_binary = (sig1 > sig1_thresh) * 1.0
 
 	print('sig1_pk_num')
 	print(sum(sig1_binary))
@@ -142,14 +140,17 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.nbp.txt', shell=True)
 		sig2_p = read2d_array(sig2_wg_raw + '.nbp.txt', float)
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
-		sig2_binary = sig2_z_p_fdr < fdr_thresh
+		sig2_binary = (sig2_z_p_fdr < fdr_thresh) * 1.0
+	if p_method == 'gmm':
+		call('Rscript ' + script_folder + 'gmm_0506.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.gmm.txt', shell=True)
+		sig2_binary = read2d_array(sig2_wg_raw + '.gmm.txt', float)
 	elif p_method == 'z':
 		sig2_log2 = np.log2(sig2+0.01)
 		sig2_z_p_fdr = p_adjust(1 - norm.cdf((sig2_log2 - np.mean(sig2_log2))/ np.std(sig2_log2)), 'fdr')
-		sig2_binary = sig2_z_p_fdr < fdr_thresh
+		sig2_binary = (sig2_z_p_fdr < fdr_thresh) * 1.0
 
 
-	sig2_pk_num = np.sum(sig2_binary)
+	sig2_pk_num = np.sum(sig2_binary==1.0)
 	print('sig2_pk_num')
 	print(sig2_pk_num)
 
@@ -157,19 +158,20 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	if sig2_pk_num <= rank_lim:
 		sig2_thresh = np.sort(sig2, axis=None)[-rank_lim]
 		print('rank sig2')
-		sig2_binary = sig2 > sig2_thresh
+		sig2_binary = (sig2 > sig2_thresh) * 1.0
 
 	print('sig2_pk_num')
 	print(sum(sig2_binary))
 	print(sig2_pk_num)
 
 	### peak region (both != 0 in sig1 & sig2)
-	peak_binary = (sig1_binary[:,0] & sig2_binary[:,0])
-	peak_binary_union = (sig1_binary[:,0] | sig2_binary[:,0])
+	peak_binary = (sig1_binary[:,0] + sig2_binary[:,0]) == 2.0
+	peak_binary_union = ( ((sig1_binary[:,0] + sig2_binary[:,0]) == 1.0)*1.0 + ((sig1_binary[:,0] + sig2_binary[:,0]) == 2.0)*1.0 ) >0
+	unused = (sig1_binary[:,0] + sig2_binary[:,0]) >= 3
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
-	bg_binary = (~(sig1_binary[:,0] | sig2_binary[:,0])) 
+	bg_binary = (sig1_binary[:,0] + sig2_binary[:,0]) == 0.0
 	print(np.sum(bg_binary))
 
 	### get common bg pk
@@ -242,15 +244,19 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_output_name + '.pknorm.txt' + ' ' + sig2_output_name + '.pknorm.txt' + '.nbp.txt', shell=True)
 		sig2_norm_p = read2d_array(sig2_output_name + '.pknorm.txt' + '.nbp.txt', float)
 		sig2_norm_p_fdr = p_adjust(sig2_norm_p, 'fdr')
-		sig2_norm_binary = sig2_norm_p_fdr < fdr_thresh
-	sig2_norm_pk_num = np.sum(sig2_norm_binary)
+		sig2_norm_binary = (sig2_norm_p_fdr < fdr_thresh) * 1.0
+	if p_method == 'gmm':
+		call('Rscript ' + script_folder + 'gmm_0506.R ' + sig2_output_name + '.pknorm.txt' + ' ' + sig2_output_name + '.pknorm.gmm.txt', shell=True)
+		sig2_norm_binary = read2d_array(sig2_output_name + '.pknorm.gmm.txt', float)
+	sig2_norm_pk_num = np.sum(sig2_norm_binary==1.0)
 	### peak region (both != 0 in sig1 & sig2)
-	peak_binary_n = (sig1_binary[:,0] & sig2_norm_binary[:,0])
-	peak_binary_union_n = (sig1_binary[:,0] | sig2_norm_binary[:,0])
+	peak_binary_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) == 2
+	peak_binary_union_n = ( ((sig1_binary[:,0] + sig2_norm_binary[:,0]) == 1.0)*1.0 + ((sig1_binary[:,0] + sig2_norm_binary[:,0]) == 2.0)*1.0 ) >0
+	unused_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) >= 3
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
-	bg_binary_n = ~(sig1_binary[:,0] | sig2_norm_binary[:,0])
+	bg_binary_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) ==0
 	used_id_cbg_n = sig2_norm[bg_binary_n,0] > 0
 	print(np.sum(bg_binary))
 
@@ -270,8 +276,10 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	idx = np.random.randint(sig2_norm.shape[0], size=sample_num)
 	peak_binary_sample = peak_binary[idx]
 	bg_binary_sample = bg_binary[idx]
+	unused_sample = unused[idx]
 	peak_binary_sample_n = peak_binary_n[idx]
 	bg_binary_sample_n = bg_binary_n[idx]
+	unused_sample_n = unused_n[idx]
 
 	plot_x = np.log2(sig2[idx,0]+small_num)
 	plot_y = np.log2(sig1[idx,0]+small_num)
@@ -289,6 +297,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	plt.scatter(plot_xn, plot_yn, marker='.', color='dodgerblue')
 	plt.scatter(plot_xn[bg_binary_sample_n], plot_yn[bg_binary_sample_n], marker='.', color='gray')
 	plt.scatter(plot_xn[peak_binary_sample_n], plot_yn[peak_binary_sample_n], marker='.', color='coral')
+	plt.scatter(plot_xn[unused_sample_n], plot_yn[unused_sample_n], marker='.', color='black')
 	plt.scatter(sig2_1log_pk_m_pkn, sig1_1log_pk_m_od, marker='.', color='k')
 	plt.scatter(sig2_1log_bg_m_pkn, sig1_1log_bg_m_od, marker='.', color='k')
 	plt.scatter(np.log2(sig2_norm_totalmean), np.log2(sig1_totalmean), marker='.', color='red')
@@ -305,6 +314,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	plt.scatter(plot_x, plot_y, marker='.', color='dodgerblue')
 	plt.scatter(plot_x[bg_binary_sample], plot_y[bg_binary_sample], marker='.', color='gray')
 	plt.scatter(plot_x[peak_binary_sample], plot_y[peak_binary_sample], marker='.', color='coral')
+	plt.scatter(plot_x[unused_sample], plot_y[unused_sample], marker='.', color='black')
 	plt.scatter(sig2_1log_pk_m_od, sig1_1log_pk_m_od, marker='.', color='k')
 	plt.scatter(sig2_1log_bg_m_od, sig1_1log_bg_m_od, marker='.', color='k')
 	plt.scatter(np.log2(sig2_totalmean), np.log2(sig1_totalmean), marker='.', color='red')
