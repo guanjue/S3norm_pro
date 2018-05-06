@@ -1,5 +1,5 @@
 library(mixtools)
-
+set.seed(2018)
 ### get parameters
 args = commandArgs(trailingOnly=TRUE)
 

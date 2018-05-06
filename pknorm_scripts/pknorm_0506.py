@@ -167,7 +167,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### peak region (both != 0 in sig1 & sig2)
 	peak_binary = (sig1_binary[:,0] + sig2_binary[:,0]) == 2.0
 	peak_binary_union = ( ((sig1_binary[:,0] + sig2_binary[:,0]) == 1.0)*1.0 + ((sig1_binary[:,0] + sig2_binary[:,0]) == 2.0)*1.0 ) >0
-	unused = (sig1_binary[:,0] + sig2_binary[:,0]) >= 3
+	unused = ( ((sig1_binary[:,0] + sig2_binary[:,0]) >= 3)*1.0 + ((sig1_binary[:,0] + sig2_binary[:,0]) != 4)*1.0 )==2.0
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
@@ -252,7 +252,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### peak region (both != 0 in sig1 & sig2)
 	peak_binary_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) == 2
 	peak_binary_union_n = ( ((sig1_binary[:,0] + sig2_norm_binary[:,0]) == 1.0)*1.0 + ((sig1_binary[:,0] + sig2_norm_binary[:,0]) == 2.0)*1.0 ) >0
-	unused_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) >= 3
+	unused_n = ( ((sig1_binary[:,0] + sig2_norm_binary[:,0]) >= 3)*1.0 + ((sig1_binary[:,0] + sig2_norm_binary[:,0]) != 4)*1.0 )==2.0
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
@@ -326,6 +326,19 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	plt.ylim(lims_min, lims_max)
 	plt.axis('scaled')
 	plt.savefig(sig2_output_name + '.scatterplot.png')
+
+	call('if [ ! -d '+sig2_output_name+'_output ]; then mkdir '+sig2_output_name+'_output; fi', shell=True)
+	call('mv '+sig2_output_name+'.scatterplot.png '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig2_output_name+'.pknorm.scatterplot.png '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig2_output_name+'.info.txt '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig2_output_name+'.pknorm.txt '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig2_output_name+'.pknorm.gmm.txt '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig1_wg_raw+'.gmm.txt '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig2_wg_raw+'.gmm.txt '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig2_output_name+'.pknorm.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig1_wg_raw+'.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
+	call('mv '+sig2_wg_raw+'.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
+
 
 ############################################################################
 
