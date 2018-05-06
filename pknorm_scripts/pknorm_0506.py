@@ -106,13 +106,14 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### read whole genome signals
 	sig1 = read2d_array(sig1_wg_raw, float)
 	sig2 = read2d_array(sig2_wg_raw, float)
-	
+	sig_thresh = 5
 	### read whole genome binary label
 	if p_method == 'nb':
-		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
+		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
 		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)
-		sig1_z_p_fdr = (p_adjust(sig1_p, 'fdr')) * 1.0
-		sig1_binary = sig1_z_p_fdr < fdr_thresh
+		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
+		sig1_binary = (sig1_z_p_fdr < fdr_thresh) * 1.0
+		sig1_binary[sig1<sig_thresh] = 3.0
 	if p_method == 'gmm':
 		call('Rscript ' + script_folder + 'gmm_0506.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.gmm.txt', shell=True)
 		sig1_binary = read2d_array(sig1_wg_raw + '.gmm.txt', float)
@@ -137,10 +138,11 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(sig1_pk_num)
 
 	if p_method == 'nb':
-		#call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.nbp.txt', shell=True)
+		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.nbp.txt', shell=True)
 		sig2_p = read2d_array(sig2_wg_raw + '.nbp.txt', float)
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
 		sig2_binary = (sig2_z_p_fdr < fdr_thresh) * 1.0
+		sig2_binary[sig2<sig_thresh] = 3.0
 	if p_method == 'gmm':
 		call('Rscript ' + script_folder + 'gmm_0506.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.gmm.txt', shell=True)
 		sig2_binary = read2d_array(sig2_wg_raw + '.gmm.txt', float)
@@ -245,6 +247,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		sig2_norm_p = read2d_array(sig2_output_name + '.pknorm.txt' + '.nbp.txt', float)
 		sig2_norm_p_fdr = p_adjust(sig2_norm_p, 'fdr')
 		sig2_norm_binary = (sig2_norm_p_fdr < fdr_thresh) * 1.0
+		sig2_norm_binary[sig2_norm < sig_thresh] = 3.0
 	if p_method == 'gmm':
 		call('Rscript ' + script_folder + 'gmm_0506.R ' + sig2_output_name + '.pknorm.txt' + ' ' + sig2_output_name + '.pknorm.gmm.txt', shell=True)
 		sig2_norm_binary = read2d_array(sig2_output_name + '.pknorm.gmm.txt', float)
@@ -253,12 +256,12 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	peak_binary_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) == 2
 	peak_binary_union_n = ( ((sig1_binary[:,0] + sig2_norm_binary[:,0]) == 1.0)*1.0 + ((sig1_binary[:,0] + sig2_norm_binary[:,0]) == 2.0)*1.0 ) >0
 	unused_n = ( ((sig1_binary[:,0] + sig2_norm_binary[:,0]) >= 3)*1.0 + ((sig1_binary[:,0] + sig2_norm_binary[:,0]) != 4)*1.0 )==2.0
-	print(np.sum(peak_binary))
+	print(np.sum(peak_binary_n))
 
 	### background region (both == 0 in sig1 & sig2)
 	bg_binary_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) ==0
 	used_id_cbg_n = sig2_norm[bg_binary_n,0] > 0
-	print(np.sum(bg_binary))
+	print(np.sum(bg_binary_n))
 
 	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary_n,0]))
 	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary_n,0][used_id_cbg_n]))
@@ -332,14 +335,17 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	call('mv '+sig2_output_name+'.pknorm.scatterplot.png '+sig2_output_name+'_output/', shell=True)
 	call('mv '+sig2_output_name+'.info.txt '+sig2_output_name+'_output/', shell=True)
 	call('mv '+sig2_output_name+'.pknorm.txt '+sig2_output_name+'_output/', shell=True)
-	call('mv '+sig2_output_name+'.pknorm.gmm.txt '+sig2_output_name+'_output/', shell=True)
-	call('mv '+sig1_wg_raw+'.gmm.txt '+sig2_output_name+'_output/', shell=True)
-	call('mv '+sig2_wg_raw+'.gmm.txt '+sig2_output_name+'_output/', shell=True)
-	call('mv '+sig2_output_name+'.pknorm.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
-	call('mv '+sig1_wg_raw+'.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
-	call('mv '+sig2_wg_raw+'.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
-
-
+	if p_method == 'gmm':
+		call('mv '+sig2_output_name+'.pknorm.gmm.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig1_wg_raw+'.gmm.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig2_wg_raw+'.gmm.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig2_output_name+'.pknorm.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig1_wg_raw+'.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig2_wg_raw+'.gmm.txt.png '+sig2_output_name+'_output/', shell=True)
+	elif p_method == 'nb':
+		call('mv '+sig2_output_name+'.pknorm.txt.nbp.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig1_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig2_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
 ############################################################################
 
 import getopt
