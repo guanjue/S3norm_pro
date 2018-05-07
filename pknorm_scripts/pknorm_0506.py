@@ -100,8 +100,8 @@ def nb_cpf(signal_vec):
 ################################################################################################
 ### PKnorm
 def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, rank_lim, upperlim, lowerlim, script_folder, p_method):
-	sig1_output_name = sig1_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[1]
-	sig2_output_name = sig2_wg_raw.split('.')[0]+'_'+sig2_wg_raw.split('.')[1]
+	sig1_output_name = sig1_wg_raw.split('.')[0]+'_'+sig1_wg_raw.split('.')[2]
+	sig2_output_name = sig2_wg_raw.split('.')[0]+'_'+sig2_wg_raw.split('.')[2]
 
 	### read whole genome signals
 	sig1 = read2d_array(sig1_wg_raw, float)
@@ -334,7 +334,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	call('mv '+sig2_output_name+'.scatterplot.png '+sig2_output_name+'_output/', shell=True)
 	call('mv '+sig2_output_name+'.pknorm.scatterplot.png '+sig2_output_name+'_output/', shell=True)
 	call('mv '+sig2_output_name+'.info.txt '+sig2_output_name+'_output/', shell=True)
-	call('mv '+sig2_output_name+'.pknorm.txt '+sig2_output_name+'_output/', shell=True)
+	#call('mv '+sig2_output_name+'.pknorm.txt '+sig2_output_name+'_output/', shell=True)
 	if p_method == 'gmm':
 		call('mv '+sig2_output_name+'.pknorm.gmm.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig1_wg_raw+'.gmm.txt '+sig2_output_name+'_output/', shell=True)
