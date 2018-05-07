@@ -1,0 +1,31 @@
+module load gcc
+module load python/2.7.8
+
+cd /storage/home/gzx103/scratch/vision/all_final_data/5end_reads_count
+
+script_folder='/storage/home/gzx103/group/software/PKnorm/pknorm_scripts/'
+mark=h3k4me3
+
+files=ER4.h3k4me3rep.13.bamtobed5endintersect.signal-ER4.h3k4me3rep.98.bamtobed5endintersect.signal
+
+f1=$(echo "$files" | awk -F '-' '{print $1}')
+f2=$(echo "$files" | awk -F '-' '{print $2}')
+ct=$(echo "$files" | awk -F '.' '{print $1"_"$7}')
+echo $ct
+echo $f1
+echo $f2
+
+
+script_folder='/Users/universe/Documents/2018_BG/PKnorm/pknorm_scripts/'
+mark=h3k4me3
+f1=t.1.txt
+f2=t.2.txt
+
+time python $script_folder'pknorm_0504.py' -r $f1 -t $f2 -m 1 -i 2 -f 0.05 -n 100000 -l 10000 -a 100000 -b 0 -s $script_folder -p nb
+
+
+
+
+
+
+
