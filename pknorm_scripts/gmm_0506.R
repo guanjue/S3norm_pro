@@ -9,12 +9,14 @@ signal_track_file = args[1]
 output_name = args[2]
 
 sig = scan(signal_track_file)
-thesh = 5
+thesh = -1
 
 used_id = sig>=thesh
 
 sig_noLow_raw = sig[used_id]
-sig_noLow = log(sig_noLow_raw+rnorm(length(sig_noLow_raw),1,0.1))
+sig_noLow_raw_addnorm = sig_noLow_raw+rnorm(length(sig_noLow_raw),1,0.1)
+sig_noLow_raw_addnorm[sig_noLow_raw_addnorm<1]=1
+sig_noLow = log(sig_noLow_raw_addnorm)
 
 cluster_num = 3
 
@@ -45,6 +47,7 @@ colors = c('red', 'green', 'blue')[c_order]
 x=seq(0,max(sig_noLow),0.02)
 
 png(paste(output_name, '.png', sep=''))
+
 hist(sig_used, breaks=50, freq=FALSE)
 s1 = (mfit$parameters$variance$sigmasq[1])^0.5
 m1 = mfit$parameters$mean[1]
@@ -61,6 +64,7 @@ m3 = mfit$parameters$mean[3]
 l3 = mfit$parameters$pro[3]
 hx3 <- dnorm(x,m3,s3)
 lines(x, hx3*l3, type='l', lty=1, col=colors[3])
+
 dev.off()
 
 c_order = order(mixmdl2$mu)
