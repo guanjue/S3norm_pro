@@ -207,8 +207,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### transformation
 	sig2_norm = []
 	for s in sig2[:,0]:
-		#s_norm = (A * (s+small_num)**B) - small_num
-		s_norm = (A * (s)**B)
+		s_norm = (A * (s+small_num)**B) - small_num
+		#s_norm = (A * (s)**B)
 		if s_norm > upperlim:
 			s_norm = upperlim
 		elif s_norm < lowerlim:
