@@ -62,7 +62,7 @@ def conv1d_count(array1d, size, small_num, total_length):
 	sig_density_count = {}
 	for sig in array1d:
 		i=i+1
-		if i%1000==0:
+		if i%100000==0:
 			print(i)
 		if sig in sig_density_count:
 			counts = sig_density_count[sig]
