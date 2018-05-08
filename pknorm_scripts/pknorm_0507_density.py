@@ -62,14 +62,14 @@ def conv1d_count(array1d, size, small_num, total_length):
 	sig_density_count = {}
 	for sig in array1d:
 		i=i+1
-		if i%100000==0:
+		if i%10000==0:
 			print(i)
 		if sig in sig_density_count:
 			counts = sig_density_count[sig]
 		else:
 			lowerlim = sig - size
 			upperlim = sig + size
-			counts = np.array([1/(np.sum((array1d>=lowerlim) & (array1d<=upperlim))*1.0)])
+			counts = np.array([1/(np.compress((array1d>=lowerlim) & (array1d<=upperlim), array1d).size*1.0)])
 			sig_density_count[sig] = counts
 		weight = np.concatenate((weight, counts), axis=0)
 	#weight = weight * total_length
