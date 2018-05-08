@@ -57,23 +57,24 @@ def p_adjust(pvalue, method):
 def conv1d_count(array1d, size, small_num, total_length):
 	print('conv1d_count...')
 	weight = np.array([])
-	count_all = np.array([])
 	array1d_log = np.log2(array1d+small_num)
 	i=0
+	sig_density_count = {}
 	for sig in array1d:
 		i=i+1
 		if i%1000==0:
 			print(i)
-		lowerlim = sig - size
-		upperlim = sig + size
-		counts = np.array([1/(np.sum((array1d>=lowerlim) & (array1d<=upperlim))*1.0)])
-		count_all = np.concatenate((count_all, 1/counts), axis=0)
+		if sig in sig_density_count:
+			counts = sig_density_count[sig]
+		else:
+			lowerlim = sig - size
+			upperlim = sig + size
+			counts = np.array([1/(np.sum((array1d>=lowerlim) & (array1d<=upperlim))*1.0)])
+			sig_density_count[sig] = counts
 		weight = np.concatenate((weight, counts), axis=0)
 	#weight = weight * total_length
 	weight = weight / max(weight)
-	print(len(array1d))
-	print(count_all[0:10])
-	print(count_all[0:10]/total_length)
+
 	print(weight[0:10])
 	return weight
 
