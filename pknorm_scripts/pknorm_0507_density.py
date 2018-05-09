@@ -54,7 +54,7 @@ def p_adjust(pvalue, method):
 
 ################################################################################################
 ### convolution 1-D
-def conv2d_count(array1, array2, size, small_num):
+def conv2d_count_slow(array1, array2, size, small_num):
 	program_starts = time.time()
 	print('conv1d_count...')
 	weight_all = np.array([])
@@ -62,7 +62,7 @@ def conv2d_count(array1, array2, size, small_num):
 	array2_log = np.log2(array2+small_num)
 	i=0
 	sig_density_weight = {}
-	smooth = 0.5
+	smooth = 0.1
 	for sig1, sig2 in zip(array1_log, array2_log):
 		label = str(int(sig1*1/smooth))+'_'+str(int(sig2*1/smooth))
 		i=i+1
@@ -81,7 +81,7 @@ def conv2d_count(array1, array2, size, small_num):
 	print(zip(array1_log, array2_log)[0:20])
 	print(1/weight_all[0:20])
 	print(weight_all[0:20])
-	weight_all = weight_all / size**2 * (np.max(array1_log)-np.min(array1_log)) * (np.max(array2_log)-np.min(array2_log))
+	weight_all = weight_all #/ 4*size**2 #* (np.max(array1_log)-np.min(array1_log)) * (np.max(array2_log)-np.min(array2_log))
 	print(weight_all[0:20])
 	#weight_all[weight_all<=1e-2] = 1e-2
 	now = time.time()
@@ -91,54 +91,69 @@ def conv2d_count(array1, array2, size, small_num):
 ################################################################################################
 ### convolution 1-D
 import time
-def conv1d_count_new(array1d, size, small_num, total_length):
+def conv2d_count(array1, array2, size, small_num):
 	program_starts = time.time()
 	print('conv1d_count...')
-	weight = np.array([])
-	array1d_log = np.log2(array1d+small_num)
+	weight_all = np.array([])
+	array1_log = np.log2(array1+small_num)
+	array2_log = np.log2(array2+small_num)
 	i=0
-	sig_density_count = {}
-	#array1d_log_sorted = 
-	for sig in array1d:
-		i=i+1
-		if i%10000==0:
-			print(i)
-		if sig in sig_density_count:
-			counts = sig_density_count[sig]
-		elif (sig - size) == np.min(array1d):
-			lowerlim = sig - size
-			upperlim = sig + size
-			counts = np.array([1/(np.compress((array1d>=lowerlim) & (array1d<=upperlim), array1d).size*1.0)])
-			sig_density_count[sig] = counts
-			array1d = array1d[array1d>lowerlim]
-		else:
-			lowerlim = sig - size
-			upperlim = sig + size
-			counts = np.array([1/(np.compress((array1d>=lowerlim) & (array1d<=upperlim), array1d).size*1.0)])
-			sig_density_count[sig] = counts
+	sig_density_weight = {}
+	smooth = 1
 
-		weight = np.concatenate((weight, counts), axis=0)
-	#weight = weight * total_length
-	weight = weight / np.max(weight)
+	lowerlim1 = np.min(array1_log)
+	upperlim1 = np.max(array1_log)
+	lowerlim2 = np.min(array2_log)
+	upperlim2 = np.max(array2_log)
+
+	range_1 = range(int(lowerlim1),int(upperlim1+1), size)
+	range_2 = range(int(lowerlim2),int(upperlim2+1), size)
+
+	weight_all = np.repeat(1.0,len(array1_log))
+	j=1
+	i=1
+	print(((array1_log>=i) & (array1_log<=i+size) & (array2_log>=j) & (array2_log<=j+size))[:,0].shape)
+	print(weight_all.shape)
+	for i in range_1:
+		for j in range_2:
+			label = str(i)+'_'+str(j)
+			
+			#weight = np.array([1/(np.sum((array1_log>=i) & (array1_log<=i+1) & (array2_log>=j) & (array2_log<=j+1))*1.0)])
+			count = np.sum((array1_log>=i) & (array1_log<i+size) & (array2_log>=j) & (array2_log<j+size))*1.0
+			if count > 0:
+				print(label)
+				weight = 1/np.log10(count+1)
+				print(count)
+				print(weight)
+				weight_all[((array1_log>=i) & (array1_log<i+size) & (array2_log>=j) & (array2_log<j+size))[:,0]] = weight
+
+	print(array1_log[0:20])
+	print(array2_log[0:20])
+	print(1/weight_all[0:20])
+	print(weight_all[0:20])
+	weight_all = weight_all / np.mean(weight_all)#1**2 * (np.max(array1_log)-np.min(array1_log)) * (np.max(array2_log)-np.min(array2_log))
+	print(weight_all[0:20])
+	print(weight_all)
+	#weight_all[weight_all<=1e-2] = 1e-2
 	now = time.time()
 	print("It has been {0} seconds since the loop started".format(now - program_starts))
-	print(weight[0:10])
-	return weight
+	return weight_all
+
 
 ################################################################################################
 ### NewtonRaphsonMethod
-def NewtonRaphsonMethod(sig1_pk,sig1_bg, sig2_pk,sig2_bg, A,B, moment, converge_thresh, numIterations, total_length):
+def NewtonRaphsonMethod(sig1_pk,sig1_bg, sig2_pk,sig2_bg, A,B, moment, converge_thresh, numIterations, total_length, pk_w, bg_w):
 	print('start NewtonRaphsonMethod...')
-	sig1_pk_mean = np.mean(sig1_pk**moment)
-	sig1_bg_mean = np.mean(sig1_bg**moment)
+	sig1_pk_mean = np.average(sig1_pk**moment, axis=0, weights=pk_w)
+	sig1_bg_mean = np.average(sig1_bg**moment, axis=0, weights=bg_w)
 
 	for i in range(0, numIterations):
-		fb = sig1_bg_mean * np.mean(sig2_pk**(moment*B)) - sig1_pk_mean * np.mean(sig2_bg**(moment*B))
-		dfb = moment * sig1_bg_mean * np.mean(np.log2(sig2_pk) * sig2_pk**(moment*B)) - moment * sig1_pk_mean * np.mean(np.log2(sig2_bg) * sig2_bg**(moment*B))
+		fb = sig1_bg_mean * np.average(sig2_pk**(moment*B), axis=0, weights=pk_w) - sig1_pk_mean * np.average(sig2_bg**(moment*B), axis=0, weights=bg_w)
+		dfb = moment * sig1_bg_mean * np.average(np.log2(sig2_pk) * sig2_pk**(moment*B), axis=0, weights=pk_w) - moment * sig1_pk_mean * np.average(np.log2(sig2_bg) * sig2_bg**(moment*B), axis=0, weights=bg_w)
 
 		### next step
 		B = B - fb / dfb	
-		A = sig1_bg_mean / np.mean(sig2_bg**(moment*B))
+		A = sig1_bg_mean / np.average(sig2_bg**(moment*B), axis=0, weights=bg_w)
 
 		print("Iteration %d | dFB: %f" % (i, dfb))
 		print([A,B])
@@ -182,17 +197,17 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	sig1 = read2d_array(sig1_wg_raw, float)
 	sig2 = read2d_array(sig2_wg_raw, float)
 	np.random.seed(2018)
-	sample_num = 500000
-	idx = np.random.randint(sig1.shape[0], size=sample_num)
-	sig1 = sig1[idx]
-	sig2 = sig2[idx]
+	#sample_num = 500000
+	#idx = np.random.randint(sig1.shape[0], size=sample_num)
+	#sig1 = sig1[idx]
+	#sig2 = sig2[idx]
 
 	sig_thresh = -1
 	all_len = len(sig1)
 	### read whole genome binary label
 	if p_method == 'nb':
 		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
-		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)[idx]
+		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)#[idx]
 		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
 		sig1_binary = (sig1_z_p_fdr < fdr_thresh) * 1.0
 		sig1_binary[sig1<sig_thresh] = 3.0
@@ -221,7 +236,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 
 	if p_method == 'nb':
 		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.nbp.txt', shell=True)
-		sig2_p = read2d_array(sig2_wg_raw + '.nbp.txt', float)[idx]
+		sig2_p = read2d_array(sig2_wg_raw + '.nbp.txt', float)#[idx]
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
 		sig2_binary = (sig2_z_p_fdr < fdr_thresh) * 1.0
 		sig2_binary[sig2<sig_thresh] = 3.0
@@ -249,34 +264,65 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(sig2_pk_num)
 
 	### peak region (both != 0 in sig1 & sig2)
-	peak_binary = (sig1_binary[:,0] + sig2_binary[:,0]) == 2.0
-	peak_binary_union = ( ((sig1_binary[:,0] + sig2_binary[:,0]) == 1.0)*1.0 + ((sig1_binary[:,0] + sig2_binary[:,0]) == 2.0)*1.0 ) >0
-	unused = ( ((sig1_binary[:,0] + sig2_binary[:,0]) >= 3)*1.0 + ((sig1_binary[:,0] + sig2_binary[:,0]) != 4)*1.0 )==2.0
+	### sampling
+	np.random.seed(2018)
+	idx = np.random.randint(sig1.shape[0], size=sample_num)
+	sig1_s = sig1[idx]
+	sig2_s = sig2[idx]
+	sig1_binary_s = sig1_binary[idx]
+	sig2_binary_s = sig2_binary[idx]
+
+	peak_binary = (sig1_binary_s[:,0] + sig2_binary_s[:,0]) == 2.0
+	peak_binary_union = ( ((sig1_binary_s[:,0] + sig2_binary_s[:,0]) == 1.0)*1.0 + ((sig1_binary_s[:,0] + sig2_binary_s[:,0]) == 2.0)*1.0 ) >0
+	unused = ( ((sig1_binary_s[:,0] + sig2_binary_s[:,0]) >= 3)*1.0 + ((sig1_binary_s[:,0] + sig2_binary_s[:,0]) != 4)*1.0 )==2.0
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
-	bg_binary = (sig1_binary[:,0] + sig2_binary[:,0]) == 0.0
+	bg_binary = (sig1_binary_s[:,0] + sig2_binary_s[:,0]) == 0.0
 	print(np.sum(bg_binary))
 
 	### get common bg pk
-	size = 1
-	sig1_sig2_weight = conv2d_count(sig1, sig2, size, 0.1)
+	size = 0.5
+	sig1_sig2_weight = conv2d_count_slow(sig1_s, sig2_s, size, 0.1)
+	print('sig1_sig2_weight summary:')
+	print(min(sig1_sig2_weight/sum(sig1_sig2_weight)))
+	print(max(sig1_sig2_weight/sum(sig1_sig2_weight)))
+	print(np.median(sig1_sig2_weight/sum(sig1_sig2_weight)))
+	#sig1_sig2_weight[sig1_sig2_weight<1e-5] = 1e-5
 	sig1_sig2_weight = sig1_sig2_weight.reshape(len(sig1_sig2_weight),1)
 	print(sig1_sig2_weight.shape)
 	print(sig1.shape)
-	sig1_cbg = (sig1*sig1_sig2_weight)[bg_binary,0]
-	sig2_cbg = (sig2*sig1_sig2_weight)[bg_binary,0]
-	used_id_cbg = (sig1_cbg>-1) & (sig2_cbg>-1)
+	sig1_cbg = sig1_s[bg_binary,0]
+	sig2_cbg = sig2_s[bg_binary,0]
+	bg_weight = sig1_sig2_weight[bg_binary]
+	used_id_cbg = (sig1_cbg>-10000) & (sig2_cbg>-10000)
 	sig1_cbg = sig1_cbg[used_id_cbg]
 	sig2_cbg = sig2_cbg[used_id_cbg]
-	sig1_cpk = sig1[peak_binary,0]
-	sig2_cpk = sig2[peak_binary,0]
+	bg_weight = bg_weight[used_id_cbg,0]
+	sig1_cpk = sig1_s[peak_binary,0]
+	sig2_cpk = sig2_s[peak_binary,0]
+	pk_weight = sig1_sig2_weight[peak_binary,0]
 
 	### get data driven added small number
-	sig1_cbg_mean = np.mean(sig1_cbg)
-	sig2_cbg_mean = np.mean(sig2_cbg)
-	sig1_cpk_mean = np.mean(sig1_cpk)
-	sig2_cpk_mean = np.mean(sig2_cpk)
+	print(sig1_cbg.shape)
+	print(bg_weight.shape)
+	print(sig1_cpk[0:10])
+	print(pk_weight[0:10])
+	print(sig1_cbg[0:10])
+	print(bg_weight[0:10])
+	sig1_cbg_mean = np.average(sig1_cbg, axis=0, weights=bg_weight)
+	print('check!check!')
+	print(sig1_cbg_mean)
+	print(np.mean(sig1_cbg))
+	sig2_cbg_mean = np.average(sig2_cbg, axis=0, weights=bg_weight)
+	sig1_cpk_mean = np.average(sig1_cpk, axis=0, weights=pk_weight)
+	sig2_cpk_mean = np.average(sig2_cpk, axis=0, weights=pk_weight)
+	print(sig2_cbg_mean)
+	print(np.mean(sig2_cbg))
+	print(sig1_cpk_mean)
+	print(np.mean(sig1_cpk))
+	print(sig2_cpk_mean)
+	print(np.mean(sig2_cpk))
 
 	small_num = (sig1_cpk_mean*sig2_cbg_mean - sig1_cbg_mean*sig2_cpk_mean) / ((sig1_cbg_mean-sig1_cpk_mean)-(sig2_cbg_mean-sig2_cpk_mean))
 	if small_num >1:
@@ -286,7 +332,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print('added small number: '+str(small_num))
 	### get transformation factor
 
-	AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500, all_len)
+	AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500, all_len, pk_weight, bg_weight)
 	#AB = NewtonRaphsonMethod(sig1_cpk,sig1_cbg, sig2_cpk,sig2_cbg, 1.0, 2.0, moment, 1e-5, 500)
 	A=AB[0]
 	B=AB[1]
@@ -315,20 +361,19 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### reshape for writing oputput
 	sig2_norm = np.reshape(sig2_norm, (sig2_norm.shape[0],1))
 
+	sig2_norm_s = sig2_norm[idx]
+
 	### rotated means for sig2 for plotting
-	sig1_w = sig1*sig1_sig2_weight
-	sig2_w = sig2*sig1_sig2_weight
+	sig1_1log_pk_m_od = np.log2(np.average(sig1_s[peak_binary,0], axis=0, weights=pk_weight))
+	sig2_1log_pk_m_od = np.log2(np.average(sig2_s[peak_binary,0], axis=0, weights=pk_weight))
 
-	sig1_1log_pk_m_od = np.log2(np.mean(sig1_w[peak_binary,0]))
-	sig2_1log_pk_m_od = np.log2(np.mean(sig2_w[peak_binary,0]))
-
-	sig1_1log_bg_m_od = np.log2(np.mean(sig1_w[bg_binary,0][used_id_cbg]))
-	sig2_1log_bg_m_od = np.log2(np.mean(sig2_w[bg_binary,0][used_id_cbg]))
+	sig1_1log_bg_m_od = np.log2(np.average(sig1_s[bg_binary,0][used_id_cbg], axis=0, weights=bg_weight))
+	sig2_1log_bg_m_od = np.log2(np.average(sig2_s[bg_binary,0][used_id_cbg], axis=0, weights=bg_weight))
 
 	###FRiP score
-	sig2_norm_FRiP = np.sum(sig2_norm[(sig2_binary[:,0]!=0),0]) / np.sum(sig2_norm)
-	sig2_FRiP = np.sum(sig2[(sig2_binary[:,0]!=0),0]) / np.sum(sig2)
-	sig1_FRiP = np.sum(sig1[(sig1_binary[:,0]!=0),0]) / np.sum(sig1)
+	sig2_norm_FRiP = np.sum(sig2_norm_s[(sig2_binary_s[:,0]!=0),0]) / np.sum(sig2_norm_s)
+	sig2_FRiP = np.sum(sig2_s[(sig2_binary_s[:,0]!=0),0]) / np.sum(sig2_s)
+	sig1_FRiP = np.sum(sig1_s[(sig1_binary_s[:,0]!=0),0]) / np.sum(sig1_s)
 
 	### write output: normalized signal
 	write2d_array(sig2_norm, sig2_output_name + '.pknorm.txt')
@@ -350,13 +395,17 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 
 	### background region (both == 0 in sig1 & sig2)
 	bg_binary_n = (sig1_binary[:,0] + sig2_norm_binary[:,0]) ==0
-	used_id_cbg_n = sig2_norm[bg_binary_n,0] > -1
+	peak_binary_n_s = peak_binary_n[idx]
+	bg_binary_n_s = bg_binary_n[idx]
+
+	used_id_cbg_n = sig2_norm_s[bg_binary_n_s,0] > -10000
+	bg_weight_n = sig1_sig2_weight[bg_binary_n_s,0]
+	pk_weight_n = sig1_sig2_weight[peak_binary_n_s,0]
 	print(np.sum(bg_binary_n))
 
-	sig2_norm_w = sig2_norm*sig1_sig2_weight
-	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm_w[peak_binary_n,0]))
-	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm_w[bg_binary_n,0][used_id_cbg_n]))
-	sig2_1log_bg_m_od = np.log2(np.mean(sig2_w[bg_binary,0][used_id_cbg]))
+	sig2_1log_pk_m_pkn = np.log2(np.average(sig2_norm_s[peak_binary_n_s,0], axis=0, weights=pk_weight_n))
+	sig2_1log_bg_m_pkn = np.log2(np.average(sig2_norm_s[bg_binary_n_s,0][used_id_cbg_n], axis=0, weights=bg_weight_n))
+	sig2_1log_bg_m_od = np.log2(np.average(sig2_s[bg_binary,0][used_id_cbg], axis=0, weights=bg_weight))
 
 	jaccard_index = float(np.sum(peak_binary))/(np.sum(peak_binary_union))
 	jaccard_index_n = float(np.sum(peak_binary_n))/(np.sum(peak_binary_union_n))
@@ -368,22 +417,22 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### plot scatter plot
 	np.random.seed(2018)
 	idx = np.random.randint(sig2_norm.shape[0], size=sample_num)
-	peak_binary_sample = peak_binary[idx]
-	bg_binary_sample = bg_binary[idx]
-	unused_sample = unused[idx]
-	peak_binary_sample_n = peak_binary_n[idx]
-	bg_binary_sample_n = bg_binary_n[idx]
-	unused_sample_n = unused_n[idx]
+	peak_binary_sample = peak_binary
+	bg_binary_sample = bg_binary
+	unused_sample = unused
+	peak_binary_sample_n = peak_binary_n_s
+	bg_binary_sample_n = bg_binary_n_s
+	unused_sample_n = unused_n
 
-	plot_x = np.log2(sig2[idx,0]+small_num)
-	plot_y = np.log2(sig1[idx,0]+small_num)
-	plot_xn = np.log2(sig2_norm[idx,0]+small_num)
-	plot_yn = np.log2(sig1[idx,0]+small_num)
+	plot_x = np.log2(sig2_s[:,0]+small_num)
+	plot_y = np.log2(sig1_s[:,0]+small_num)
+	plot_xn = np.log2(sig2_norm_s[:,0]+small_num)
+	plot_yn = np.log2(sig1_s[:,0]+small_num)
 	lims_max = np.max(np.concatenate((plot_x, plot_y, plot_xn, plot_yn)))
 	lims_min = np.min(np.concatenate((plot_x, plot_y, plot_xn, plot_yn)))
 
-	plot_xn = np.log2(sig2_norm[idx,0]+small_num)
-	plot_yn = np.log2(sig1[idx,0]+small_num)
+	plot_xn = np.log2(sig2_norm_s[:,0]+small_num)
+	plot_yn = np.log2(sig1_s[:,0]+small_num)
 	lims_max = np.max(np.concatenate((plot_x, plot_y, plot_xn, plot_yn)))
 	lims_min = np.min(np.concatenate((plot_x, plot_y, plot_xn, plot_yn)))
 
@@ -391,7 +440,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	plt.scatter(plot_xn, plot_yn, marker='.', color='dodgerblue')
 	plt.scatter(plot_xn[bg_binary_sample_n], plot_yn[bg_binary_sample_n], marker='.', color='gray')
 	plt.scatter(plot_xn[peak_binary_sample_n], plot_yn[peak_binary_sample_n], marker='.', color='coral')
-	plt.scatter(plot_xn[unused_sample_n], plot_yn[unused_sample_n], marker='.', color='black')
+	#plt.scatter(plot_xn[unused_sample_n], plot_yn[unused_sample_n], marker='.', color='black')
 	plt.scatter(sig2_1log_pk_m_pkn, sig1_1log_pk_m_od, marker='.', color='k')
 	plt.scatter(sig2_1log_bg_m_pkn, sig1_1log_bg_m_od, marker='.', color='k')
 	plt.scatter(np.log2(sig2_norm_totalmean), np.log2(sig1_totalmean), marker='.', color='red')
@@ -408,7 +457,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	plt.scatter(plot_x, plot_y, marker='.', color='dodgerblue')
 	plt.scatter(plot_x[bg_binary_sample], plot_y[bg_binary_sample], marker='.', color='gray')
 	plt.scatter(plot_x[peak_binary_sample], plot_y[peak_binary_sample], marker='.', color='coral')
-	plt.scatter(plot_x[unused_sample], plot_y[unused_sample], marker='.', color='black')
+	#plt.scatter(plot_x[unused_sample], plot_y[unused_sample], marker='.', color='black')
 	plt.scatter(sig2_1log_pk_m_od, sig1_1log_pk_m_od, marker='.', color='k')
 	plt.scatter(sig2_1log_bg_m_od, sig1_1log_bg_m_od, marker='.', color='k')
 	plt.scatter(np.log2(sig2_totalmean), np.log2(sig1_totalmean), marker='.', color='red')
