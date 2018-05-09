@@ -75,7 +75,7 @@ def conv2d_count_slow(array1, array2, size, small_num):
 			upperlim1 = sig1 + size
 			lowerlim2 = sig2 - size
 			upperlim2 = sig2 + size
-			weight = np.array([1/(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1) & (array2_log>=lowerlim2) & (array2_log<=upperlim2))*1.0)])
+			weight = np.array([100.0/(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1) & (array2_log>=lowerlim2) & (array2_log<=upperlim2))*1.0+100.0)])
 			sig_density_weight[label] = weight
 		weight_all = np.concatenate((weight_all, weight), axis=0)
 	print(zip(array1_log, array2_log)[0:20])
@@ -122,7 +122,7 @@ def conv2d_count(array1, array2, size, small_num):
 			count = np.sum((array1_log>=i) & (array1_log<i+size) & (array2_log>=j) & (array2_log<j+size))*1.0
 			if count > 0:
 				print(label)
-				weight = 1/np.log10(count+1)
+				weight = 101/np.log10(count+101)
 				print(count)
 				print(weight)
 				weight_all[((array1_log>=i) & (array1_log<i+size) & (array2_log>=j) & (array2_log<j+size))[:,0]] = weight
