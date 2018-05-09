@@ -284,6 +284,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### get common bg pk
 	size = 0.5
 	sig1_sig2_weight = conv2d_count_slow(sig1_s, sig2_s, size, 0.1)
+	sig1_sig2_weight[sig1_sig2_weight<=1e-4] = 1e-4
 	print('sig1_sig2_weight summary:')
 	print(min(sig1_sig2_weight/sum(sig1_sig2_weight)))
 	print(max(sig1_sig2_weight/sum(sig1_sig2_weight)))
