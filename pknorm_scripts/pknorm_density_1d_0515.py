@@ -53,18 +53,17 @@ def p_adjust(pvalue, method):
 
 
 ################################################################################################
-### convolution 2-D
-def conv2d_count_slow(array1, array2, size, small_num):
+### convolution 1-D
+def conv2d_count_slow_1d(array1, size, small_num):
 	program_starts = time.time()
 	print('conv1d_count...')
 	weight_all = np.array([])
 	array1_log = np.log2(array1+small_num)
-	array2_log = np.log2(array2+small_num)
 	i=0
 	sig_density_weight = {}
 	smooth = 0.1
-	for sig1, sig2 in zip(array1_log, array2_log):
-		label = str(int(sig1*1/smooth))+'_'+str(int(sig2*1/smooth))
+	for sig1 in array1_log:
+		label = str(int(sig1*1/smooth))
 		i=i+1
 		if i%10000==0:
 			print(i)
@@ -73,13 +72,11 @@ def conv2d_count_slow(array1, array2, size, small_num):
 		else:
 			lowerlim1 = sig1 - size
 			upperlim1 = sig1 + size
-			lowerlim2 = sig2 - size
-			upperlim2 = sig2 + size
 			#weight = np.array([100.0/(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1) & (array2_log>=lowerlim2) & (array2_log<=upperlim2))*1.0+100.0)])
-			weight = np.array([(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1) & (array2_log>=lowerlim2) & (array2_log<=upperlim2))*1.0)])
+			weight = np.array([(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1))*1.0)])
 			sig_density_weight[label] = weight
 		weight_all = np.concatenate((weight_all, weight), axis=0)
-	print(zip(array1_log, array2_log)[0:20])
+	print(array1_log[0:20])
 	print(1/weight_all[0:20])
 	print(weight_all[0:20])
 	weight_all = weight_all
@@ -312,43 +309,49 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(np.sum(bg_binary))
 
 	### get common bg pk
-	size = 0.05
-	sig1_sig2_weight = conv2d_count_slow(sig1_s, sig2_s, size, 0.1)
+	size = 0.5
+	sig1_weight = conv2d_count_slow_1d(sig1_s, size, 0.1)
+	sig2_weight = conv2d_count_slow_1d(sig2_s, size, 0.1)
 	#sig1_sig2_weight = gaussian_kernal_density_2d(sig1_s, sig2_s, True, 0.1)
-	#sig1_sig2_weight[sig1_sig2_weight<=1e-10] = 1e-10
+	sig1_weight[sig1_weight<=1e-10] = 1e-10
+	sig2_weight[sig2_weight<=1e-10] = 1e-10
 	print('sig1_sig2_weight summary:')
-	print(min(sig1_sig2_weight/sum(sig1_sig2_weight)))
-	print(max(sig1_sig2_weight/sum(sig1_sig2_weight)))
-	print(np.median(sig1_sig2_weight/sum(sig1_sig2_weight)))
+	print(min(sig1_weight/sum(sig1_weight)))
+	print(max(sig1_weight/sum(sig1_weight)))
+	print(np.median(sig1_weight/sum(sig1_weight)))
 	#sig1_sig2_weight[sig1_sig2_weight<1e-5] = 1e-5
-	sig1_sig2_weight = sig1_sig2_weight.reshape(len(sig1_sig2_weight),1)
-	print(sig1_sig2_weight.shape)
+	sig1_weight = sig1_weight.reshape(len(sig1_weight),1)
+	sig2_weight = sig2_weight.reshape(len(sig2_weight),1)
+	print(sig1_weight.shape)
 	print(sig1.shape)
 	sig1_cbg = sig1_s[bg_binary,0]
 	sig2_cbg = sig2_s[bg_binary,0]
-	bg_weight = sig1_sig2_weight[bg_binary]
+	sig1_bg_weight = sig1_weight[bg_binary]
+	sig2_bg_weight = sig2_weight[bg_binary]
 	used_id_cbg = (sig1_cbg>-10000) & (sig2_cbg>-10000)
 	sig1_cbg = sig1_cbg[used_id_cbg]
 	sig2_cbg = sig2_cbg[used_id_cbg]
-	bg_weight = bg_weight[used_id_cbg,0]
+	sig1_bg_weight = sig1_bg_weight[used_id_cbg,0]
+	sig2_bg_weight = sig2_bg_weight[used_id_cbg,0]
 	sig1_cpk = sig1_s[peak_binary,0]
 	sig2_cpk = sig2_s[peak_binary,0]
-	pk_weight = sig1_sig2_weight[peak_binary,0]
+	sig1_pk_weight = sig1_weight[peak_binary,0]
+	sig2_pk_weight = sig2_weight[peak_binary,0]
 
 	### get data driven added small number
 	print(sig1_cbg.shape)
-	print(bg_weight.shape)
+	print(sig1_bg_weight.shape)
 	print(sig1_cpk[0:10])
-	print(pk_weight[0:10])
+	print(sig1_pk_weight[0:10])
 	print(sig1_cbg[0:10])
-	print(bg_weight[0:10])
-	sig1_cbg_mean = np.average(sig1_cbg, axis=0, weights=bg_weight)
+	print(sig1_bg_weight[0:10])
+	sig1_cbg_mean = np.average(sig1_cbg, axis=0, weights=sig1_bg_weight)
 	print('check!check!')
 	print(sig1_cbg_mean)
 	print(np.mean(sig1_cbg))
-	sig2_cbg_mean = np.average(sig2_cbg, axis=0, weights=bg_weight)
-	sig1_cpk_mean = np.average(sig1_cpk, axis=0, weights=pk_weight)
-	sig2_cpk_mean = np.average(sig2_cpk, axis=0, weights=pk_weight)
+	sig2_cbg_mean = np.average(sig2_cbg, axis=0, weights=sig2_bg_weight)
+	sig1_cpk_mean = np.average(sig1_cpk, axis=0, weights=sig1_pk_weight)
+	sig2_cpk_mean = np.average(sig2_cpk, axis=0, weights=sig2_pk_weight)
 	print(sig2_cbg_mean)
 	print(np.mean(sig2_cbg))
 	print(sig1_cpk_mean)
