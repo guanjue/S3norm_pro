@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from scipy.stats import norm, nbinom
+from scipy.stats import norm, nbinom, gaussian_kde
 
 ################################################################################################
 ### read 2d array
@@ -53,7 +53,7 @@ def p_adjust(pvalue, method):
 
 
 ################################################################################################
-### convolution 1-D
+### convolution 2-D
 def conv2d_count_slow(array1, array2, size, small_num):
 	program_starts = time.time()
 	print('conv1d_count...')
@@ -75,18 +75,48 @@ def conv2d_count_slow(array1, array2, size, small_num):
 			upperlim1 = sig1 + size
 			lowerlim2 = sig2 - size
 			upperlim2 = sig2 + size
-			weight = np.array([100.0/(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1) & (array2_log>=lowerlim2) & (array2_log<=upperlim2))*1.0+100.0)])
+			#weight = np.array([100.0/(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1) & (array2_log>=lowerlim2) & (array2_log<=upperlim2))*1.0+100.0)])
+			weight = np.array([(np.sum((array1_log>=lowerlim1) & (array1_log<=upperlim1) & (array2_log>=lowerlim2) & (array2_log<=upperlim2))*1.0)])
 			sig_density_weight[label] = weight
 		weight_all = np.concatenate((weight_all, weight), axis=0)
 	print(zip(array1_log, array2_log)[0:20])
 	print(1/weight_all[0:20])
 	print(weight_all[0:20])
-	weight_all = weight_all #/ 4*size**2 #* (np.max(array1_log)-np.min(array1_log)) * (np.max(array2_log)-np.min(array2_log))
+	weight_all = weight_all
+	weight_all = (1/weight_all / (np.sum(1/weight_all))) #/ 4*size**2 #* (np.max(array1_log)-np.min(array1_log)) * (np.max(array2_log)-np.min(array2_log))
 	print(weight_all[0:20])
 	#weight_all[weight_all<=1e-2] = 1e-2
 	now = time.time()
 	print("It has been {0} seconds since the loop started".format(now - program_starts))
 	return weight_all
+
+################################################################################################
+### Gaussian kernal density 2-D
+def gaussian_kernal_density_2d(array1, array2, use_log, small_num):
+	program_starts = time.time()
+	print('conv1d_count...')
+	if use_log:
+		array1 = np.log2(array1+small_num)
+		array2 = np.log2(array2+small_num)
+	### merge array to 2d matrix
+	array_2d = np.concatenate((array1, array2), 1)
+	### Gaussian kernal density function estimation
+	print('Gaussian kernal density function estimation...')
+	gkd = gaussian_kde(array_2d)
+	print('Gaussian kernal density function calculation...')
+	density = gkd(array_2d)
+	print('Gaussian kernal density weight...')
+	weight_all = 1/density
+
+	print(zip(array1, array2)[0:20])
+	print(1/weight_all[0:20])
+	print(weight_all[0:20])
+	print(weight_all[0:20])
+	#weight_all[weight_all<=1e-2] = 1e-2
+	now = time.time()
+	print("It has been {0} seconds since the loop started".format(now - program_starts))
+	return weight_all
+
 
 ################################################################################################
 ### convolution 1-D
@@ -282,8 +312,9 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(np.sum(bg_binary))
 
 	### get common bg pk
-	size = 0.0
+	size = 0.5
 	sig1_sig2_weight = conv2d_count_slow(sig1_s, sig2_s, size, 0.1)
+	#sig1_sig2_weight = gaussian_kernal_density_2d(sig1_s, sig2_s, True, 0.1)
 	sig1_sig2_weight[sig1_sig2_weight<=1e-10] = 1e-10
 	print('sig1_sig2_weight summary:')
 	print(min(sig1_sig2_weight/sum(sig1_sig2_weight)))
