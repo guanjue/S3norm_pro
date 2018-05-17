@@ -62,7 +62,7 @@ nbp_2r = function(sig, p_lim_1r){
 
 ################################################
 plot_dif_col = function(sig_x, sig_y, common_pk, common_bg, min_sig, max_sig, output_name){
-	pdf(output_name, width = 6, height = 6)
+	pdf(output_name, width = 12, height = 12)
 	plot(sig_x, sig_y, xlim=c(min_sig, max_sig), ylim=c(min_sig, max_sig), pch=16, cex=1, col = 'dodgerblue')
 	points(sig_x[common_pk], sig_y[common_pk], col='darkorange1', pch=16, cex=1)
 	points(sig_x[common_bg], sig_y[common_bg], col='gray28', pch=16, cex=1)
