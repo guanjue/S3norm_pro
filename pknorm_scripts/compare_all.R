@@ -79,6 +79,14 @@ get_FRiP_pknum_jaccard_index = function(sig_x, sig_y, sig_x_nbp, sig_y_nbp){
 	### FRiP
 	sig_x_FRiP = sum(sig_x[sig_x_nbp]) / sum(sig_x)
 	sig_y_FRiP = sum(sig_y[sig_y_nbp]) / sum(sig_y)
+	### pk & bg mean
+	sig_x_pk_mean = mean(sig_x[sig_x_nbp])
+	sig_y_pk_mean = mean(sig_y[sig_y_nbp])
+	sig_x_bg_mean = mean(sig_x[sig_x_nbp==0])
+	sig_y_bg_mean = mean(sig_y[sig_y_nbp==0])
+	sig_x_total_mean = mean(sig_x)
+	sig_y_total_mean = mean(sig_y)
+
 	### pk_num
 	sig_x_pknum = sum(sig_x_nbp)
 	sig_y_pknum = sum(sig_y_nbp)
@@ -87,7 +95,7 @@ get_FRiP_pknum_jaccard_index = function(sig_x, sig_y, sig_x_nbp, sig_y_nbp){
 	pk_union_num = sum((sig_x_nbp + sig_y_nbp)!=0)
 	jaccard_index = pk_overlap_num / pk_union_num
 
-	return(c(sig_x_FRiP, sig_y_FRiP, sig_x_pknum, sig_y_pknum, jaccard_index, pk_overlap_num, pk_union_num))
+	return(c(sig_x_FRiP, sig_y_FRiP, sig_x_pknum, sig_y_pknum, jaccard_index, pk_overlap_num, pk_union_num, sig_x_pk_mean, sig_y_pk_mean, sig_x_bg_mean, sig_y_bg_mean, sig_x_total_mean, sig_y_total_mean))
 }
 
 ################################################
@@ -204,7 +212,7 @@ FRiP_pknum_JI_MAnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_MAnorm, d1_raw_nb
 
 FRiP_pknum_JI_matrix = as.matrix(rbind(FRiP_pknum_JI_raw, FRiP_pknum_JI_QTnorm, FRiP_pknum_JI_PKnorm, FRiP_pknum_JI_TRnorm, FRiP_pknum_JI_MAnorm))
 rownames(FRiP_pknum_JI_matrix) = c('raw', 'QTnorm', 'PKnorm', 'TRnorm', 'MAnorm')
-colnames(FRiP_pknum_JI_matrix) = c('sig_x_FRiP', 'sig_y_FRiP', 'sig_x_pknum', 'sig_y_pknum', 'jaccard_index', 'pk_overlap_num', 'pk_union_num')
+colnames(FRiP_pknum_JI_matrix) = c('sig_x_FRiP', 'sig_y_FRiP', 'sig_x_pknum', 'sig_y_pknum', 'jaccard_index', 'pk_overlap_num', 'pk_union_num', 'sig_x_pk_mean', 'sig_y_pk_mean', 'sig_x_bg_mean', 'sig_y_bg_mean', 'sig_x_total_mean', 'sig_y_total_mean')
 
 write.table(FRiP_pknum_JI_matrix, paste(output_name, '.summary_matrix.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
 mvfile2folder(from=paste(output_name, '.summary_matrix.txt', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.summary_matrix.txt', sep=''))
