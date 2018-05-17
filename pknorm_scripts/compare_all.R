@@ -77,8 +77,8 @@ plot_dif_col = function(sig_x, sig_y, common_pk, common_bg, min_sig, max_sig, ou
 ################################################
 get_FRiP_pknum_jaccard_index = function(sig_x, sig_y, sig_x_nbp, sig_y_nbp){
 	### FRiP
-	sig_x_FRiP = sum(sig_x[sig_x_nbp]) / sum(sig_x[sig_x_nbp==0])
-	sig_y_FRiP = sum(sig_y[sig_y_nbp]) / sum(sig_y[sig_y_nbp==0])
+	sig_x_FRiP = sum(sig_x[sig_x_nbp]) / sum(sig_x)
+	sig_y_FRiP = sum(sig_y[sig_y_nbp]) / sum(sig_y)
 	### pk_num
 	sig_x_pknum = sum(sig_x_nbp)
 	sig_y_pknum = sum(sig_y_nbp)
