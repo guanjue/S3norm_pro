@@ -71,8 +71,30 @@ plot_dif_col = function(sig_x, sig_y, common_pk, common_bg, min_sig, max_sig, ou
 	points(mean(sig_x), mean(sig_y), col='red', pch=16, cex=2)
 	abline(0,1,lwd=3,col='black')
 	lines(c(mean(sig_x[common_bg]), mean(sig_x[common_pk])), c(mean(sig_y[common_bg]), mean(sig_y[common_pk])), col='royalblue1', lty=2, lwd=3)
-	abline(0,1,col='red')
 	dev.off()
+}
+
+################################################
+get_FRiP_pknum_jaccard_index = function(sig_x, sig_y, sig_x_nbp, sig_y_nbp){
+	### FRiP
+	sig_x_FRiP = sum(sig_x[sig_x_nbp]) / sum(sig_x[sig_x_nbp==0])
+	sig_y_FRiP = sum(sig_y[sig_y_nbp]) / sum(sig_y[sig_y_nbp==0])
+	### pk_num
+	sig_x_pknum = sum(sig_x_nbp)
+	sig_y_pknum = sum(sig_y_nbp)
+	### jaccard_index
+	pk_overlap_num = sum((sig_x_nbp * sig_y_nbp)==1)
+	pk_union_num = sum((sig_x_nbp + sig_y_nbp)!=0)
+	jaccard_index = pk_overlap_num / pk_union_num
+
+	return(c(sig_x_FRiP, sig_y_FRiP, sig_x_pknum, sig_y_pknum, jaccard_index, pk_overlap_num, pk_union_num))
+}
+
+################################################
+mvfile2folder = function(from, to) {
+    todir = dirname(to)
+    if (!isTRUE(file.info(todir)$isdir)) dir.create(todir, recursive=TRUE)
+    file.rename(from = from,  to = to)
 }
 
 ################################################
@@ -172,5 +194,19 @@ d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001), method='fdr') < fdr_thresh
 
 print('plot 5 files')
 plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
+
+print('get numeric summary')
+FRiP_pknum_JI_raw = get_FRiP_pknum_jaccard_index(d1_raw, d2_raw, d1_raw_nbp, d2_raw_nbp)
+FRiP_pknum_JI_QTnorm = get_FRiP_pknum_jaccard_index(d1_QTnorm, d2_QTnorm, d1_QTnorm_nbp, d2_QTnorm_nbp)
+FRiP_pknum_JI_PKnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_PKnorm, d1_raw_nbp, d2_PKnorm_nbp)
+FRiP_pknum_JI_TRnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_TRnorm, d1_raw_nbp, d2_TRnorm_nbp)
+FRiP_pknum_JI_MAnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_MAnorm, d1_raw_nbp, d2_MAnorm_nbp)
+
+FRiP_pknum_JI_matrix = as.matrix(rbind(FRiP_pknum_JI_raw, FRiP_pknum_JI_QTnorm, FRiP_pknum_JI_PKnorm, FRiP_pknum_JI_TRnorm, FRiP_pknum_JI_MAnorm))
+rownames(FRiP_pknum_JI_matrix) = c('raw', 'QTnorm', 'PKnorm', 'TRnorm', 'MAnorm')
+colnames(FRiP_pknum_JI_matrix) = c('sig_x_FRiP', 'sig_y_FRiP', 'sig_x_pknum', 'sig_y_pknum', 'jaccard_index', 'pk_overlap_num', 'pk_union_num')
+
+write.table(FRiP_pknum_JI_matrix, paste(output_name, '.summary_matrix.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
+mvfile2folder(from=paste(output_name, '.summary_matrix.txt', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.summary_matrix.txt', sep=''))
 
 
