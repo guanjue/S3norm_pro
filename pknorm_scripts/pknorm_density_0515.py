@@ -297,6 +297,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	### sampling
 	np.random.seed(2018)
 	idx = np.random.randint(sig1.shape[0], size=sample_num)
+	idx_matrix = idx.reshape(sample_num,1)
+	write2d_array(idx_matrix, sig2_output_name + '.idx.txt')
 	sig1_s = sig1[idx]
 	sig2_s = sig2[idx]
 	sig1_binary_s = sig1_binary[idx]
@@ -520,6 +522,8 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		call('mv '+sig1_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig2_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig2_output_name + '.weight.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig2_output_name + '.idx.txt '+sig2_output_name+'_output/', shell=True)
+
 ############################################################################
 
 import getopt

@@ -84,6 +84,18 @@ plot_dif_col_PKnorm = function(sig_y, sig_x, sig_x_weight, common_pk, common_bg,
 	plot(sig_x, sig_y, xlim=c(min_sig, max_sig), ylim=c(min_sig, max_sig), pch=16, cex=1, col = 'dodgerblue')
 	points(sig_x[common_pk], sig_y[common_pk], col='darkorange1', pch=16, cex=1)
 	points(sig_x[common_bg], sig_y[common_bg], col='gray28', pch=16, cex=1)
+	print('try')
+	print(summary(sig_x_weight))
+	print(cbind(sig_x_weight, common_pk, sig_x)[common_pk,])
+	print((sig_x_weight[common_pk]))
+	print((common_pk[common_pk]))
+	print((sig_x[common_pk]))
+	print(head(common_pk))
+	print(head(sig_x_weight))
+	print(length(sig_x[common_pk]))
+	print(length(sig_x_weight[common_pk]))
+	print(weighted.mean(sig_x[common_pk], sig_x_weight[common_pk]))
+	print(mean(sig_x[common_pk]))
 	points(weighted.mean(sig_x[common_pk], sig_x_weight[common_pk]), weighted.mean(sig_y[common_pk], sig_x_weight[common_pk]), col='black', pch=16, cex=2)
 	points(weighted.mean(sig_x[common_bg], sig_x_weight[common_bg]), weighted.mean(sig_y[common_bg], sig_x_weight[common_bg]), col='black', pch=16, cex=2)
 	points(mean(sig_x), mean(sig_y), col='red', pch=16, cex=2)
@@ -138,7 +150,7 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRn
 
 	### sampling for plotting
 	set.seed(2018)
-	sample_id = sample(length(d1_raw_log2), 500000)
+	sample_id = sample(length(d1_raw_log2), 5000)
 	### sample signals
 	d1_raw_log2_s = d1_raw_log2[sample_id]
 	d2_raw_log2_s = d2_raw_log2[sample_id]
@@ -148,7 +160,15 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRn
 	d2_MAnorm_log2_s = d2_MAnorm_log2[sample_id]
 	d2_QTnorm_log2_s = d2_QTnorm_log2[sample_id]
 
+	print(head(d2_PKnorm_weight))
+	print(length(d2_PKnorm_weight))
+	print('summary')
+	print(summary(d2_PKnorm_weight))
+	print(summary(sample_id))
 	d2_PKnorm_weight_s = d2_PKnorm_weight[sample_id]
+	print(summary(d2_PKnorm_weight_s))
+	print(head(d2_PKnorm_weight_s))
+	print(length(d2_PKnorm_weight_s))
 	### sample NB-p
 	d1_raw_nbp_s = d1_raw_nbp[sample_id]
 	d2_raw_nbp_s = d2_raw_nbp[sample_id]
@@ -174,6 +194,9 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRn
 
 	d12_PKnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_PKnorm_nbp_s) == 1
 	d12_PKnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_PKnorm_nbp_s) == 0
+	print(head(d12_PKnorm_nbp_common_pk_s))
+	print(length(d2_PKnorm_log2_s))
+	print(length(d2_PKnorm_weight_s))
 	plot_dif_col_PKnorm(d1_raw_log2_s, d2_PKnorm_log2_s, d2_PKnorm_weight_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
 
 	d12_TRnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_TRnorm_nbp_s) == 1
