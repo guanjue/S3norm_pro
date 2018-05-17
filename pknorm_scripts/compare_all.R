@@ -1,0 +1,173 @@
+### get parameters
+args = commandArgs(trailingOnly=TRUE)
+
+sig1_raw = args[1]
+sig2_raw = args[2]
+
+sig1_QTnorm = args[3]
+sig2_QTnorm = args[4]
+
+sig2_PKnorm = args[5]
+sig2_TRnorm = args[6]
+sig2_MAnorm = args[7]
+
+output_name = args[8]
+fdr_thresh = as.numeric(args[9])
+
+################################################
+nbp_2r = function(sig, p_lim_1r){
+	### get mean & var
+	thesh = -1
+	sig_non0 = sig[sig>=thesh]
+	sig_mean = mean(sig_non0)
+	sig_var = var(sig_non0)
+	### print overdispersion
+	print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))
+	### get negative binomial prob
+	sig_prob = sig_mean / sig_var
+	### set upper & lower lim for the NB-prob
+	if (sig_prob<0.1){
+		print('use lower bound for nbp prob')
+		sig_prob = 0.1
+	}
+	if (sig_prob>=0.9){
+		print('use upper bound for nbp prob')
+		sig_prob = 0.9
+	}
+	### get size
+	sig_size = sig_mean * sig_prob / (1-sig_prob)
+	### get NB-p-value
+	nb_pval = apply(as.matrix(sig_non0), MARGIN=1, function(x) pnbinom(x[1], sig_size, sig_prob, lower.tail=FALSE) )
+
+	### 2nd round
+	sig_non0_bg = sig_non0[nb_pval>=p_lim_1r]
+	sig_non0_bg_mean = mean(sig_non0_bg)
+	sig_non0_bg_var = var(sig_non0_bg)
+	print(paste('2nd round check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))
+	sig_prob_2nd = sig_non0_bg_mean / sig_non0_bg_var
+	if (sig_prob_2nd<0.1){
+		print('use lower bound for nbp prob')
+		sig_prob_2nd = 0.1
+	}
+	if (sig_prob_2nd>=0.9){
+		print('use upper bound for nbp prob')
+		sig_prob_2nd = 0.9
+	}
+	sig_size_2nd = sig_non0_bg_mean * sig_prob_2nd / (1-sig_prob_2nd)
+	nb_pval_2nd = apply(as.matrix(sig), MARGIN=1, function(x) pnbinom(x[1], sig_size_2nd, sig_prob_2nd, lower.tail=FALSE) )
+
+	### return 2nd round NB-p-value
+	return(nb_pval_2nd)
+}
+
+################################################
+plot_dif_col = function(sig_x, sig_y, common_pk, common_bg, min_sig, max_sig, output_name){
+	pdf(output_name, width = 6, height = 6)
+	plot(sig_x, sig_y, xlim=c(min_sig, max_sig), ylim=c(min_sig, max_sig), pch=16, cex=1, col = 'dodgerblue')
+	points(sig_x[common_pk], sig_y[common_pk], col='darkorange1', pch=16, cex=1)
+	points(sig_x[common_bg], sig_y[common_bg], col='gray28', pch=16, cex=1)
+	points(mean(sig_x[common_pk]), mean(sig_y[common_pk]), col='black', pch=16, cex=2)
+	points(mean(sig_x[common_bg]), mean(sig_y[common_bg]), col='black', pch=16, cex=2)
+	points(mean(sig_x), mean(sig_y), col='red', pch=16, cex=2)
+	abline(0,1,lwd=3,col='black')
+	lines(c(mean(sig_x[common_bg]), mean(sig_x[common_pk])), c(mean(sig_y[common_bg]), mean(sig_y[common_pk])), col='royalblue1', lty=2, lwd=3)
+	abline(0,1,col='red')
+	dev.off()
+}
+
+################################################
+plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name){
+	### convert to log2 scale
+	d1_raw_log2 = log2(d1_raw+0.1)
+	d2_raw_log2 = log2(d2_raw+0.1)
+	d1_QTnorm_log2 = log2(d1_QTnorm+0.1)
+	d2_PKnorm_log2 = log2(d2_PKnorm+0.1)
+	d2_TRnorm_log2 = log2(d2_TRnorm+0.1)
+	d2_MAnorm_log2 = log2(d2_MAnorm+0.1)
+	d2_QTnorm_log2 = log2(d2_QTnorm+0.1)
+
+	### sampling for plotting
+	set.seed(2018)
+	sample_id = sample(length(d1_raw_log2), 100000)
+	### sample signals
+	d1_raw_log2_s = d1_raw_log2[sample_id]
+	d2_raw_log2_s = d2_raw_log2[sample_id]
+	d1_QTnorm_log2_s = d1_QTnorm_log2[sample_id]
+	d2_PKnorm_log2_s = d2_PKnorm_log2[sample_id]
+	d2_TRnorm_log2_s = d2_TRnorm_log2[sample_id]
+	d2_MAnorm_log2_s = d2_MAnorm_log2[sample_id]
+	d2_QTnorm_log2_s = d2_QTnorm_log2[sample_id]
+
+	### sample NB-p
+	d1_raw_nbp_s = d1_raw_nbp[sample_id]
+	d2_raw_nbp_s = d2_raw_nbp[sample_id]
+	d1_QTnorm_nbp_s = d1_QTnorm_nbp[sample_id]
+	d2_PKnorm_nbp_s = d2_PKnorm_nbp[sample_id]
+	d2_TRnorm_nbp_s = d2_TRnorm_nbp[sample_id]
+	d2_MAnorm_nbp_s = d2_MAnorm_nbp[sample_id]
+	d2_QTnorm_nbp_s = d2_QTnorm_nbp[sample_id]
+
+	### get max and min
+	all_matrix_sample = cbind(d1_raw_log2_s, d2_raw_log2_s, d1_QTnorm_log2_s, d2_PKnorm_log2_s, d2_TRnorm_log2_s, d2_MAnorm_log2_s, d2_QTnorm_log2_s)
+	min_sig = min(all_matrix_sample)
+	max_sig = max(all_matrix_sample)
+
+	### plot figure
+	d12_raw_nbp_common_pk_s = (d1_raw_nbp_s * d2_raw_nbp_s) == 1
+	d12_raw_nbp_common_bg_s = (d1_raw_nbp_s + d2_raw_nbp_s) == 0
+	plot_dif_col(d1_raw_log2_s, d2_raw_log2_s, d12_raw_nbp_common_pk_s, d12_raw_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.raw.pdf', sep=''))
+
+	d12_QTnorm_nbp_common_pk_s = (d1_QTnorm_nbp_s * d2_QTnorm_nbp_s) == 1
+	d12_QTnorm_nbp_common_bg_s = (d1_QTnorm_nbp_s + d2_QTnorm_nbp_s) == 0
+	plot_dif_col(d1_QTnorm_log2_s, d2_QTnorm_log2_s, d12_QTnorm_nbp_common_pk_s, d12_QTnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.QTnorm.pdf', sep=''))
+
+	d12_PKnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_PKnorm_nbp_s) == 1
+	d12_PKnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_PKnorm_nbp_s) == 0
+	plot_dif_col(d1_raw_log2_s, d2_PKnorm_log2_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
+
+	d12_TRnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_TRnorm_nbp_s) == 1
+	d12_TRnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_TRnorm_nbp_s) == 0
+	plot_dif_col(d1_raw_log2_s, d2_TRnorm_log2_s, d12_TRnorm_nbp_common_pk_s, d12_TRnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.TRnorm.pdf', sep=''))
+
+	d12_MAnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_MAnorm_nbp_s) == 1
+	d12_MAnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_MAnorm_nbp_s) == 0
+	plot_dif_col(d1_raw_log2_s, d2_MAnorm_log2_s, d12_MAnorm_nbp_common_pk_s, d12_MAnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.MAnorm.pdf', sep=''))
+
+
+	dir.create(paste(output_name, '_difnorm_compare', sep=''), showWarnings = FALSE)
+	mvfile2folder(from=paste(output_name, '.raw.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.raw.pdf', sep=''))
+	mvfile2folder(from=paste(output_name, '.QTnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.QTnorm.pdf', sep=''))
+	mvfile2folder(from=paste(output_name, '.PKnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.PKnorm.pdf', sep=''))
+	mvfile2folder(from=paste(output_name, '.TRnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.TRnorm.pdf', sep=''))
+	mvfile2folder(from=paste(output_name, '.MAnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.MAnorm.pdf', sep=''))
+}
+################################################
+
+
+### read raw signal
+d1_raw = scan(sig1_raw)
+d1_raw_nbp = p.adjust(nbp_2r(d1_raw), method='fdr') < fdr_thresh
+d2_raw = scan(sig2_raw)
+d2_raw_nbp = p.adjust(nbp_2r(d2_raw), method='fdr') < fdr_thresh
+
+### read Quantile normalized signal
+d1_QTnorm = scan(sig1_QTnorm)
+d1_QTnorm_nbp = p.adjust(nbp_2r(d1_QTnorm), method='fdr') < fdr_thresh
+d2_QTnorm = scan(sig2_QTnorm)
+d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm), method='fdr') < fdr_thresh
+
+
+### read PKnorm, total mean normalized, MAnorm
+d2_PKnorm = scan(sig2_PKnorm)
+d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm), method='fdr') < fdr_thresh
+
+d2_TRnorm = scan(sig2_TRnorm)
+d2_TRnorm_nbp = p.adjust(nbp_2r(d2_TRnorm), method='fdr') < fdr_thresh
+
+d2_MAnorm = scan(sig2_MAnorm)
+d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm), method='fdr') < fdr_thresh
+
+
+plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
+
+
