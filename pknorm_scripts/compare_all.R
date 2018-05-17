@@ -17,7 +17,7 @@ output_name = args[9]
 fdr_thresh = as.numeric(args[10])
 
 ################################################
-nbp_2r = function(sig, p_lim_1r){
+nbp_2r = function(sig, p_lim_1r, output_name){
 	### get mean & var
 	thesh = -1
 	sig_non0 = sig[sig>=thesh]
@@ -58,6 +58,8 @@ nbp_2r = function(sig, p_lim_1r){
 	sig_size_2nd = sig_non0_bg_mean * sig_prob_2nd / (1-sig_prob_2nd)
 	nb_pval_2nd = apply(as.matrix(sig), MARGIN=1, function(x) pnbinom(x[1], sig_size_2nd, sig_prob_2nd, lower.tail=FALSE) )
 
+	### write nbp_2r
+	write.table(nb_pval_2nd, output_name, quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
 	### return 2nd round NB-p-value
 	return(nb_pval_2nd)
 }
@@ -196,29 +198,29 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRn
 ### read raw signal
 print('read raw files')
 d1_raw = scan(sig1_raw)
-d1_raw_nbp = p.adjust(nbp_2r(d1_raw, 0.001), method='fdr') < fdr_thresh
+d1_raw_nbp = p.adjust(nbp_2r(d1_raw, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_raw = scan(sig2_raw)
-d2_raw_nbp = p.adjust(nbp_2r(d2_raw, 0.001), method='fdr') < fdr_thresh
+d2_raw_nbp = p.adjust(nbp_2r(d2_raw, 0.001, paste(sig2_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 
 ### read Quantile normalized signal
 print('read QTnorm files')
 d1_QTnorm = scan(sig1_QTnorm)
-d1_QTnorm_nbp = p.adjust(nbp_2r(d1_QTnorm, 0.001), method='fdr') < fdr_thresh
+d1_QTnorm_nbp = p.adjust(nbp_2r(d1_QTnorm, 0.001, paste(sig1_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_QTnorm = scan(sig2_QTnorm)
-d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm, 0.001), method='fdr') < fdr_thresh
+d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm, 0.001, paste(sig2_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 
 
 ### read PKnorm, total mean normalized, MAnorm
 print('read PKnorm files')
 d2_PKnorm = scan(sig2_PKnorm)
-d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm, 0.001), method='fdr') < fdr_thresh
+d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm, 0.001, paste(sig2_raw, '.PKnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_PKnorm_weight = scan(sig2_PKnorm_weight)
 print('read TRnorm files')
 d2_TRnorm = scan(sig2_TRnorm)
-d2_TRnorm_nbp = p.adjust(nbp_2r(d2_TRnorm, 0.001), method='fdr') < fdr_thresh
+d2_TRnorm_nbp = p.adjust(nbp_2r(d2_TRnorm, 0.001, paste(sig2_raw, '.TRnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 print('read MAnorm files')
 d2_MAnorm = scan(sig2_MAnorm)
-d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001), method='fdr') < fdr_thresh
+d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001, paste(sig2_raw, '.MAnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 
 print('plot 5 files')
 plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
@@ -236,5 +238,13 @@ colnames(FRiP_pknum_JI_matrix) = c('sig_x_FRiP', 'sig_y_FRiP', 'sig_x_pknum', 's
 
 write.table(FRiP_pknum_JI_matrix, paste(output_name, '.summary_matrix.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
 mvfile2folder(from=paste(output_name, '.summary_matrix.txt', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.summary_matrix.txt', sep=''))
+
+mvfile2folder(from=paste(sig1_raw, '.nbp_2r.txt', sep=''), to=paste(output_name, '_difnorm_compare/', sig1_raw, '.nbp_2r.txt', sep=''))
+mvfile2folder(from=paste(sig2_raw, '.nbp_2r.txt', sep=''), to=paste(output_name, '_difnorm_compare/', sig2_raw, '.nbp_2r.txt', sep=''))
+mvfile2folder(from=paste(sig1_raw, '.QTnorm.nbp_2r.txt', sep=''), to=paste(output_name, '_difnorm_compare/', sig1_raw, '.QTnorm.nbp_2r.txt', sep=''))
+mvfile2folder(from=paste(sig2_raw, '.QTnorm.nbp_2r.txt', sep=''), to=paste(output_name, '_difnorm_compare/', sig2_raw, '.QTnorm.nbp_2r.txt', sep=''))
+mvfile2folder(from=paste(sig2_raw, '.PKnorm.nbp_2r.txt', sep=''), to=paste(output_name, '_difnorm_compare/', sig2_raw, '.PKnorm.nbp_2r.txt', sep=''))
+mvfile2folder(from=paste(sig2_raw, '.TRnorm.nbp_2r.txt', sep=''), to=paste(output_name, '_difnorm_compare/', sig2_raw, '.TRnorm.nbp_2r.txt', sep=''))
+mvfile2folder(from=paste(sig2_raw, '.MAnorm.nbp_2r.txt', sep=''), to=paste(output_name, '_difnorm_compare/', sig2_raw, '.MAnorm.nbp_2r.txt', sep=''))
 
 
