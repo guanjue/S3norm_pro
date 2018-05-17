@@ -8,11 +8,13 @@ sig1_QTnorm = args[3]
 sig2_QTnorm = args[4]
 
 sig2_PKnorm = args[5]
-sig2_TRnorm = args[6]
-sig2_MAnorm = args[7]
+sig2_PKnorm_weight = args[6]
 
-output_name = args[8]
-fdr_thresh = as.numeric(args[9])
+sig2_TRnorm = args[7]
+sig2_MAnorm = args[8]
+
+output_name = args[9]
+fdr_thresh = as.numeric(args[10])
 
 ################################################
 nbp_2r = function(sig, p_lim_1r){
@@ -75,6 +77,20 @@ plot_dif_col = function(sig_y, sig_x, common_pk, common_bg, min_sig, max_sig, ou
 }
 
 ################################################
+plot_dif_col_PKnorm = function(sig_y, sig_x, sig_x_weight, common_pk, common_bg, min_sig, max_sig, output_name){
+	pdf(output_name, width = 12, height = 12)
+	plot(sig_x, sig_y, xlim=c(min_sig, max_sig), ylim=c(min_sig, max_sig), pch=16, cex=1, col = 'dodgerblue')
+	points(sig_x[common_pk], sig_y[common_pk], col='darkorange1', pch=16, cex=1)
+	points(sig_x[common_bg], sig_y[common_bg], col='gray28', pch=16, cex=1)
+	points(weighted.mean(sig_x[common_pk], sig_x_weight[common_pk]), weighted.mean(sig_y[common_pk], sig_x_weight[common_pk]), col='black', pch=16, cex=2)
+	points(weighted.mean(sig_x[common_bg], sig_x_weight[common_bg]), weighted.mean(sig_y[common_bg], sig_x_weight[common_bg]), col='black', pch=16, cex=2)
+	points(mean(sig_x), mean(sig_y), col='red', pch=16, cex=2)
+	abline(0,1,lwd=3,col='black')
+	lines(c(weighted.mean(sig_x[common_bg], sig_x_weight[common_bg]), weighted.mean(sig_x[common_pk], sig_x_weight[common_pk])), c(weighted.mean(sig_y[common_bg], sig_x_weight[common_bg]), weighted.mean(sig_y[common_pk], sig_x_weight[common_pk])), col='royalblue1', lty=2, lwd=3)
+	dev.off()
+}
+
+################################################
 get_FRiP_pknum_jaccard_index = function(sig_x, sig_y, sig_x_nbp, sig_y_nbp){
 	### FRiP
 	sig_x_FRiP = sum(sig_x[sig_x_nbp]) / sum(sig_x)
@@ -106,7 +122,7 @@ mvfile2folder = function(from, to) {
 }
 
 ################################################
-plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name){
+plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name){
 	### convert to log2 scale
 	d1_raw_log2 = log2(d1_raw+0.1)
 	d2_raw_log2 = log2(d2_raw+0.1)
@@ -115,6 +131,8 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2
 	d2_TRnorm_log2 = log2(d2_TRnorm+0.1)
 	d2_MAnorm_log2 = log2(d2_MAnorm+0.1)
 	d2_QTnorm_log2 = log2(d2_QTnorm+0.1)
+	### read PKnorm weight
+	d2_PKnorm_weight = d2_PKnorm_weight
 
 	### sampling for plotting
 	set.seed(2018)
@@ -128,6 +146,7 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2
 	d2_MAnorm_log2_s = d2_MAnorm_log2[sample_id]
 	d2_QTnorm_log2_s = d2_QTnorm_log2[sample_id]
 
+	d2_PKnorm_weight_s = d2_PKnorm_weight[sample_id]
 	### sample NB-p
 	d1_raw_nbp_s = d1_raw_nbp[sample_id]
 	d2_raw_nbp_s = d2_raw_nbp[sample_id]
@@ -153,7 +172,7 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2
 
 	d12_PKnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_PKnorm_nbp_s) == 1
 	d12_PKnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_PKnorm_nbp_s) == 0
-	plot_dif_col(d1_raw_log2_s, d2_PKnorm_log2_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
+	plot_dif_col_PKnorm(d1_raw_log2_s, d2_PKnorm_log2_s, d2_PKnorm_weight_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
 
 	d12_TRnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_TRnorm_nbp_s) == 1
 	d12_TRnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_TRnorm_nbp_s) == 0
@@ -193,6 +212,7 @@ d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm, 0.001), method='fdr') < fdr_thresh
 print('read PKnorm files')
 d2_PKnorm = scan(sig2_PKnorm)
 d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm, 0.001), method='fdr') < fdr_thresh
+d2_PKnorm_weight = scan(sig2_PKnorm_weight)
 print('read TRnorm files')
 d2_TRnorm = scan(sig2_TRnorm)
 d2_TRnorm_nbp = p.adjust(nbp_2r(d2_TRnorm, 0.001), method='fdr') < fdr_thresh
@@ -201,7 +221,7 @@ d2_MAnorm = scan(sig2_MAnorm)
 d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001), method='fdr') < fdr_thresh
 
 print('plot 5 files')
-plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
+plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
 
 print('get numeric summary')
 FRiP_pknum_JI_raw = get_FRiP_pknum_jaccard_index(d1_raw, d2_raw, d1_raw_nbp, d2_raw_nbp)

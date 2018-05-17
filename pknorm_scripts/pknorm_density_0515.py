@@ -322,6 +322,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(np.median(sig1_sig2_weight/sum(sig1_sig2_weight)))
 	#sig1_sig2_weight[sig1_sig2_weight<1e-5] = 1e-5
 	sig1_sig2_weight = sig1_sig2_weight.reshape(len(sig1_sig2_weight),1)
+	write2d_array(sig1_sig2_weight, sig2_output_name + '.weight.txt')
 	print(sig1_sig2_weight.shape)
 	print(sig1.shape)
 	sig1_cbg = sig1_s[bg_binary,0]
@@ -518,6 +519,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		call('mv '+sig2_output_name+'.pknorm.txt.nbp.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig1_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig2_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig2_output_name + '.weight.txt '+sig2_output_name+'_output/', shell=True)
 ############################################################################
 
 import getopt
