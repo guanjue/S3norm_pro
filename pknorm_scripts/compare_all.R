@@ -1,3 +1,6 @@
+library(mclust)
+library(Hmisc)
+
 ### get parameters
 args = commandArgs(trailingOnly=TRUE)
 
@@ -9,12 +12,14 @@ sig2_QTnorm = args[4]
 
 sig2_PKnorm = args[5]
 sig2_PKnorm_weight = args[6]
+sig2_PKnorm_idx = args[7]
 
-sig2_TRnorm = args[7]
-sig2_MAnorm = args[8]
+sig2_TRnorm = args[8]
+sig2_MAnorm = args[9]
 
-output_name = args[9]
-fdr_thresh = as.numeric(args[10])
+
+output_name = args[10]
+fdr_thresh = as.numeric(args[11])
 
 ################################################
 nbp_2r = function(sig, p_lim_1r, output_name){
@@ -66,7 +71,7 @@ nbp_2r = function(sig, p_lim_1r, output_name){
 
 ################################################
 plot_dif_col = function(sig_y, sig_x, common_pk, common_bg, min_sig, max_sig, output_name){
-	pdf(output_name, width = 12, height = 12)
+	pdf(output_name, width = 8, height = 8)
 	plot(sig_x, sig_y, xlim=c(min_sig, max_sig), ylim=c(min_sig, max_sig), pch=16, cex=1, col = 'dodgerblue')
 	points(sig_x[common_pk], sig_y[common_pk], col='darkorange1', pch=16, cex=1)
 	points(sig_x[common_bg], sig_y[common_bg], col='gray28', pch=16, cex=1)
@@ -80,32 +85,22 @@ plot_dif_col = function(sig_y, sig_x, common_pk, common_bg, min_sig, max_sig, ou
 
 ################################################
 plot_dif_col_PKnorm = function(sig_y, sig_x, sig_x_weight, common_pk, common_bg, min_sig, max_sig, output_name){
-	pdf(output_name, width = 12, height = 12)
+	pdf(output_name, width = 8, height = 8)
+	print('print PKnorm')
+	print(head(cbind(sig_x[common_pk], sig_x_weight[common_pk])))
 	plot(sig_x, sig_y, xlim=c(min_sig, max_sig), ylim=c(min_sig, max_sig), pch=16, cex=1, col = 'dodgerblue')
 	points(sig_x[common_pk], sig_y[common_pk], col='darkorange1', pch=16, cex=1)
 	points(sig_x[common_bg], sig_y[common_bg], col='gray28', pch=16, cex=1)
-	print('try')
-	print(summary(sig_x_weight))
-	print(cbind(sig_x_weight, common_pk, sig_x)[common_pk,])
-	print((sig_x_weight[common_pk]))
-	print((common_pk[common_pk]))
-	print((sig_x[common_pk]))
-	print(head(common_pk))
-	print(head(sig_x_weight))
-	print(length(sig_x[common_pk]))
-	print(length(sig_x_weight[common_pk]))
-	print(weighted.mean(sig_x[common_pk], sig_x_weight[common_pk]))
-	print(mean(sig_x[common_pk]))
-	points(weighted.mean(sig_x[common_pk], sig_x_weight[common_pk]), weighted.mean(sig_y[common_pk], sig_x_weight[common_pk]), col='black', pch=16, cex=2)
-	points(weighted.mean(sig_x[common_bg], sig_x_weight[common_bg]), weighted.mean(sig_y[common_bg], sig_x_weight[common_bg]), col='black', pch=16, cex=2)
+	points(wtd.mean(sig_x[common_pk], sig_x_weight[common_pk], normwt = "ignored"), wtd.mean(sig_y[common_pk], sig_x_weight[common_pk], normwt = "ignored"), col='black', pch=16, cex=2)
+	points(wtd.mean(sig_x[common_bg], sig_x_weight[common_bg], normwt = "ignored"), wtd.mean(sig_y[common_bg], sig_x_weight[common_bg], normwt = "ignored"), col='black', pch=16, cex=2)
 	points(mean(sig_x), mean(sig_y), col='red', pch=16, cex=2)
 	abline(0,1,lwd=3,col='black')
-	lines(c(weighted.mean(sig_x[common_bg], sig_x_weight[common_bg]), weighted.mean(sig_x[common_pk], sig_x_weight[common_pk])), c(weighted.mean(sig_y[common_bg], sig_x_weight[common_bg]), weighted.mean(sig_y[common_pk], sig_x_weight[common_pk])), col='royalblue1', lty=2, lwd=3)
+	lines(c(wtd.mean(sig_x[common_bg], sig_x_weight[common_bg], normwt = "ignored"), wtd.mean(sig_x[common_pk], sig_x_weight[common_pk], normwt = "ignored")), c(wtd.mean(sig_y[common_bg], sig_x_weight[common_bg], normwt = "ignored"), wtd.mean(sig_y[common_pk], sig_x_weight[common_pk], normwt = "ignored")), col='royalblue1', lty=2, lwd=3)
 	dev.off()
 }
 
 ################################################
-get_FRiP_pknum_jaccard_index = function(sig_x, sig_y, sig_x_nbp, sig_y_nbp){
+get_FRiP_pknum_jaccard_index = function(sig_y, sig_x, sig_y_nbp, sig_x_nbp){
 	### FRiP
 	sig_x_FRiP = sum(sig_x[sig_x_nbp]) / sum(sig_x)
 	sig_y_FRiP = sum(sig_y[sig_y_nbp]) / sum(sig_y)
@@ -121,11 +116,27 @@ get_FRiP_pknum_jaccard_index = function(sig_x, sig_y, sig_x_nbp, sig_y_nbp){
 	sig_x_pknum = sum(sig_x_nbp)
 	sig_y_pknum = sum(sig_y_nbp)
 	### jaccard_index
-	pk_overlap_num = sum((sig_x_nbp * sig_y_nbp)==1)
-	pk_union_num = sum((sig_x_nbp + sig_y_nbp)!=0)
+	overlap = (sig_x_nbp * sig_y_nbp)==1
+	pk_overlap_num = sum(overlap)
+	union = (sig_x_nbp + sig_y_nbp)!=0
+	pk_union_num = sum(union)
 	jaccard_index = pk_overlap_num / pk_union_num
 
-	return(c(sig_x_FRiP, sig_y_FRiP, sig_x_pknum, sig_y_pknum, jaccard_index, pk_overlap_num, pk_union_num, sig_x_pk_mean, sig_y_pk_mean, sig_x_bg_mean, sig_y_bg_mean, sig_x_total_mean, sig_y_total_mean))
+	FRiP_JI_all = (sum(sig_x[overlap])+sum(sig_y[overlap])) / (sum(sig_x)+sum(sig_y))
+	FRiP_JI_x = sum(sig_x[overlap]) / sum(sig_x)
+	FRiP_JI_y = sum(sig_y[overlap]) / sum(sig_y)
+
+	uniq_x = (sig_x_nbp * (!sig_y_nbp))==1
+	uniq_y = (sig_y_nbp * (!sig_x_nbp))==1
+	uniq_xy = (uniq_x + uniq_y) ==1
+	FRuP_JI_all = (sum(sig_x[uniq_x])+sum(sig_y[uniq_y])) / (sum(sig_x)+sum(sig_y))
+	FRuP_JI_x = sum(sig_x[uniq_x]) / sum(sig_x)
+	FRuP_JI_y = sum(sig_y[uniq_y]) / sum(sig_y)
+
+
+	ari = adjustedRandIndex(sig_x_nbp, sig_y_nbp)
+
+	return(c(sig_x_FRiP, sig_y_FRiP, sig_x_pknum, sig_y_pknum, jaccard_index, ari, pk_overlap_num, pk_union_num, sig_x_pk_mean, sig_y_pk_mean, sig_x_bg_mean, sig_y_bg_mean, sig_x_total_mean, sig_y_total_mean, FRiP_JI_all, FRiP_JI_x, FRiP_JI_y, FRuP_JI_all, FRuP_JI_x, FRuP_JI_y))
 }
 
 ################################################
@@ -136,7 +147,7 @@ mvfile2folder = function(from, to) {
 }
 
 ################################################
-plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name){
+plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name){
 	### convert to log2 scale
 	d1_raw_log2 = log2(d1_raw+0.1)
 	d2_raw_log2 = log2(d2_raw+0.1)
@@ -150,8 +161,9 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRn
 
 	### sampling for plotting
 	set.seed(2018)
-	sample_id = sample(length(d1_raw_log2), 5000)
+	sample_id = d2_PKnorm_idx
 	### sample signals
+	print('sample signals!!!')
 	d1_raw_log2_s = d1_raw_log2[sample_id]
 	d2_raw_log2_s = d2_raw_log2[sample_id]
 	d1_QTnorm_log2_s = d1_QTnorm_log2[sample_id]
@@ -160,15 +172,8 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRn
 	d2_MAnorm_log2_s = d2_MAnorm_log2[sample_id]
 	d2_QTnorm_log2_s = d2_QTnorm_log2[sample_id]
 
-	print(head(d2_PKnorm_weight))
-	print(length(d2_PKnorm_weight))
-	print('summary')
-	print(summary(d2_PKnorm_weight))
-	print(summary(sample_id))
-	d2_PKnorm_weight_s = d2_PKnorm_weight[sample_id]
-	print(summary(d2_PKnorm_weight_s))
-	print(head(d2_PKnorm_weight_s))
-	print(length(d2_PKnorm_weight_s))
+	d2_PKnorm_weight_s = d2_PKnorm_weight
+
 	### sample NB-p
 	d1_raw_nbp_s = d1_raw_nbp[sample_id]
 	d2_raw_nbp_s = d2_raw_nbp[sample_id]
@@ -197,7 +202,8 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRn
 	print(head(d12_PKnorm_nbp_common_pk_s))
 	print(length(d2_PKnorm_log2_s))
 	print(length(d2_PKnorm_weight_s))
-	plot_dif_col_PKnorm(d1_raw_log2_s, d2_PKnorm_log2_s, d2_PKnorm_weight_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
+	#plot_dif_col_PKnorm(d1_raw_log2_s, d2_PKnorm_log2_s, d2_PKnorm_weight_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
+	plot_dif_col(d1_raw_log2_s, d2_PKnorm_log2_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
 
 	d12_TRnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_TRnorm_nbp_s) == 1
 	d12_TRnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_TRnorm_nbp_s) == 0
@@ -238,6 +244,7 @@ print('read PKnorm files')
 d2_PKnorm = scan(sig2_PKnorm)
 d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm, 0.001, paste(sig2_raw, '.PKnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_PKnorm_weight = scan(sig2_PKnorm_weight)
+d2_PKnorm_idx = scan(sig2_PKnorm_idx)
 print('read TRnorm files')
 d2_TRnorm = scan(sig2_TRnorm)
 d2_TRnorm_nbp = p.adjust(nbp_2r(d2_TRnorm, 0.001, paste(sig2_raw, '.TRnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
@@ -246,7 +253,7 @@ d2_MAnorm = scan(sig2_MAnorm)
 d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001, paste(sig2_raw, '.MAnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 
 print('plot 5 files')
-plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
+plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
 
 print('get numeric summary')
 FRiP_pknum_JI_raw = get_FRiP_pknum_jaccard_index(d1_raw, d2_raw, d1_raw_nbp, d2_raw_nbp)
@@ -257,7 +264,7 @@ FRiP_pknum_JI_MAnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_MAnorm, d1_raw_nb
 
 FRiP_pknum_JI_matrix = as.matrix(rbind(FRiP_pknum_JI_raw, FRiP_pknum_JI_QTnorm, FRiP_pknum_JI_PKnorm, FRiP_pknum_JI_TRnorm, FRiP_pknum_JI_MAnorm))
 rownames(FRiP_pknum_JI_matrix) = c('raw', 'QTnorm', 'PKnorm', 'TRnorm', 'MAnorm')
-colnames(FRiP_pknum_JI_matrix) = c('sig_x_FRiP', 'sig_y_FRiP', 'sig_x_pknum', 'sig_y_pknum', 'jaccard_index', 'pk_overlap_num', 'pk_union_num', 'sig_x_pk_mean', 'sig_y_pk_mean', 'sig_x_bg_mean', 'sig_y_bg_mean', 'sig_x_total_mean', 'sig_y_total_mean')
+colnames(FRiP_pknum_JI_matrix) = c('sig_x_FRiP', 'sig_y_FRiP', 'sig_x_pknum', 'sig_y_pknum', 'jaccard_index', 'adjusted_rand_index', 'pk_overlap_num', 'pk_union_num', 'sig_x_pk_mean', 'sig_y_pk_mean', 'sig_x_bg_mean', 'sig_y_bg_mean', 'sig_x_total_mean', 'sig_y_total_mean', 'FRiP_JI_all', 'FRiP_JI_x', 'FRiP_JI_y', 'FRuP_JI_all', 'FRuP_JI_x', 'FRuP_JI_y')
 
 write.table(FRiP_pknum_JI_matrix, paste(output_name, '.summary_matrix.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
 mvfile2folder(from=paste(output_name, '.summary_matrix.txt', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.summary_matrix.txt', sep=''))
