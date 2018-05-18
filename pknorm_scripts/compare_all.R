@@ -161,7 +161,8 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 
 	### sampling for plotting
 	set.seed(2018)
-	sample_id = d2_PKnorm_idx
+	#sample_id = d2_PKnorm_idx
+	sample_id = sample(length(d1_raw_log2), 500000)
 	### sample signals
 	print('sample signals!!!')
 	d1_raw_log2_s = d1_raw_log2[sample_id]
