@@ -154,15 +154,15 @@ mvfile2folder = function(from, to) {
 ################################################
 plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name){
 	### convert to log2 scale
-	d1_raw_log2 = log2(d1_raw+0.1)
-	d2_raw_log2 = log2(d2_raw+0.1)
-	d1_QTnorm_log2 = log2(d1_QTnorm+0.1)
-	d2_PKnorm_log2 = log2(d2_PKnorm+0.1)
-	d2_TRnorm_log2 = log2(d2_TRnorm+0.1)
-	d2_MAnorm_log2 = log2(d2_MAnorm+0.1)
-	d2_QTnorm_log2 = log2(d2_QTnorm+0.1)
+	#d1_raw_log2 = log2(d1_raw+0.1)
+	#d2_raw_log2 = log2(d2_raw+0.1)
+	#d1_QTnorm_log2 = log2(d1_QTnorm+0.1)
+	#d2_PKnorm_log2 = log2(d2_PKnorm+0.1)
+	#d2_TRnorm_log2 = log2(d2_TRnorm+0.1)
+	#d2_MAnorm_log2 = log2(d2_MAnorm+0.1)
+	#d2_QTnorm_log2 = log2(d2_QTnorm+0.1)
 	### read PKnorm weight
-	d2_PKnorm_weight = d2_PKnorm_weight
+	#d2_PKnorm_weight = d2_PKnorm_weight
 
 	### sampling for plotting
 	set.seed(2018)
