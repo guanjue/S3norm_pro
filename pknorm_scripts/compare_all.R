@@ -71,15 +71,20 @@ nbp_2r = function(sig, p_lim_1r, output_name){
 
 ################################################
 plot_dif_col = function(sig_y, sig_x, common_pk, common_bg, min_sig, max_sig, output_name){
-	pdf(output_name, width = 8, height = 8)
-	plot(sig_x, sig_y, xlim=c(min_sig, max_sig), ylim=c(min_sig, max_sig), pch=16, cex=1, col = 'dodgerblue')
-	points(sig_x[common_pk], sig_y[common_pk], col='darkorange1', pch=16, cex=1)
-	points(sig_x[common_bg], sig_y[common_bg], col='gray28', pch=16, cex=1)
-	points(mean(sig_x[common_pk]), mean(sig_y[common_pk]), col='black', pch=16, cex=2)
-	points(mean(sig_x[common_bg]), mean(sig_y[common_bg]), col='black', pch=16, cex=2)
-	points(mean(sig_x), mean(sig_y), col='red', pch=16, cex=2)
+	sig_y_log2 = log2(sig_y+0.1)
+	sig_x_log2 = log2(sig_x+0.1)
+	min_sig_log2 = log2(min_sig+0.1)
+	max_sig_log2 = log2(max_sig+0.1)
+	#pdf(output_name, width = 8, height = 8)
+	png(output_name, width = 800, height = 800)
+	plot(sig_x_log2, sig_y_log2, xlim=c(min_sig_log2, max_sig_log2), ylim=c(min_sig_log2, max_sig_log2), pch=16, cex=1, col = 'dodgerblue')
+	points(sig_x_log2[common_pk], sig_y_log2[common_pk], col='darkorange1', pch=16, cex=1)
+	points(sig_x_log2[common_bg], sig_y_log2[common_bg], col='gray28', pch=16, cex=1)
+	points(log2(mean(sig_x[common_pk])+0.1), log2(mean(sig_y[common_pk])+0.1), col='black', pch=16, cex=2)
+	points(log2(mean(sig_x[common_bg])+0.1), log2(mean(sig_y[common_bg])+0.1), col='black', pch=16, cex=2)
+	points(log2(mean(sig_x)+0.1), log2(mean(sig_y)+0.1), col='red', pch=16, cex=2)
 	abline(0,1,lwd=3,col='black')
-	lines(c(mean(sig_x[common_bg]), mean(sig_x[common_pk])), c(mean(sig_y[common_bg]), mean(sig_y[common_pk])), col='royalblue1', lty=2, lwd=3)
+	lines(c(log2(mean(sig_x[common_bg])+0.1), log2(mean(sig_x[common_pk])+0.1)), c(log2(mean(sig_y[common_bg])+0.1), log2(mean(sig_y[common_pk])+0.1)), col='royalblue1', lty=2, lwd=3)
 	dev.off()
 }
 
@@ -162,16 +167,16 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 	### sampling for plotting
 	set.seed(2018)
 	#sample_id = d2_PKnorm_idx
-	sample_id = sample(length(d1_raw_log2), 500000)
+	sample_id = sample(length(d1_raw), 500000)
 	### sample signals
 	print('sample signals!!!')
-	d1_raw_log2_s = d1_raw_log2[sample_id]
-	d2_raw_log2_s = d2_raw_log2[sample_id]
-	d1_QTnorm_log2_s = d1_QTnorm_log2[sample_id]
-	d2_PKnorm_log2_s = d2_PKnorm_log2[sample_id]
-	d2_TRnorm_log2_s = d2_TRnorm_log2[sample_id]
-	d2_MAnorm_log2_s = d2_MAnorm_log2[sample_id]
-	d2_QTnorm_log2_s = d2_QTnorm_log2[sample_id]
+	d1_raw_s = d1_raw[sample_id]
+	d2_raw_s = d2_raw[sample_id]
+	d1_QTnorm_s = d1_QTnorm[sample_id]
+	d2_PKnorm_s = d2_PKnorm[sample_id]
+	d2_TRnorm_s = d2_TRnorm[sample_id]
+	d2_MAnorm_s = d2_MAnorm[sample_id]
+	d2_QTnorm_s = d2_QTnorm[sample_id]
 
 	d2_PKnorm_weight_s = d2_PKnorm_weight
 
@@ -185,42 +190,42 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 	d2_QTnorm_nbp_s = d2_QTnorm_nbp[sample_id]
 
 	### get max and min
-	all_matrix_sample = cbind(d1_raw_log2_s, d2_raw_log2_s, d1_QTnorm_log2_s, d2_PKnorm_log2_s, d2_TRnorm_log2_s, d2_MAnorm_log2_s, d2_QTnorm_log2_s)
+	all_matrix_sample = cbind(d1_raw_s, d2_raw_s, d1_QTnorm_s, d2_PKnorm_s, d2_TRnorm_s, d2_MAnorm_s, d2_QTnorm_s)
 	min_sig = min(all_matrix_sample)
 	max_sig = max(all_matrix_sample)
 
 	### plot figure
 	d12_raw_nbp_common_pk_s = (d1_raw_nbp_s * d2_raw_nbp_s) == 1
 	d12_raw_nbp_common_bg_s = (d1_raw_nbp_s + d2_raw_nbp_s) == 0
-	plot_dif_col(d1_raw_log2_s, d2_raw_log2_s, d12_raw_nbp_common_pk_s, d12_raw_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.raw.pdf', sep=''))
+	plot_dif_col(d1_raw_s, d2_raw_s, d12_raw_nbp_common_pk_s, d12_raw_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.raw.png', sep=''))
 
 	d12_QTnorm_nbp_common_pk_s = (d1_QTnorm_nbp_s * d2_QTnorm_nbp_s) == 1
 	d12_QTnorm_nbp_common_bg_s = (d1_QTnorm_nbp_s + d2_QTnorm_nbp_s) == 0
-	plot_dif_col(d1_QTnorm_log2_s, d2_QTnorm_log2_s, d12_QTnorm_nbp_common_pk_s, d12_QTnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.QTnorm.pdf', sep=''))
+	plot_dif_col(d1_QTnorm_s, d2_QTnorm_s, d12_QTnorm_nbp_common_pk_s, d12_QTnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.QTnorm.png', sep=''))
 
 	d12_PKnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_PKnorm_nbp_s) == 1
 	d12_PKnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_PKnorm_nbp_s) == 0
 	print(head(d12_PKnorm_nbp_common_pk_s))
-	print(length(d2_PKnorm_log2_s))
+	print(length(d2_PKnorm_s))
 	print(length(d2_PKnorm_weight_s))
-	#plot_dif_col_PKnorm(d1_raw_log2_s, d2_PKnorm_log2_s, d2_PKnorm_weight_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
-	plot_dif_col(d1_raw_log2_s, d2_PKnorm_log2_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
+	#plot_dif_col_PKnorm(d1_raw_s, d2_PKnorm_s, d2_PKnorm_weight_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.pdf', sep=''))
+	plot_dif_col(d1_raw_s, d2_PKnorm_s, d12_PKnorm_nbp_common_pk_s, d12_PKnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.PKnorm.png', sep=''))
 
 	d12_TRnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_TRnorm_nbp_s) == 1
 	d12_TRnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_TRnorm_nbp_s) == 0
-	plot_dif_col(d1_raw_log2_s, d2_TRnorm_log2_s, d12_TRnorm_nbp_common_pk_s, d12_TRnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.TRnorm.pdf', sep=''))
+	plot_dif_col(d1_raw_s, d2_TRnorm_s, d12_TRnorm_nbp_common_pk_s, d12_TRnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.TRnorm.png', sep=''))
 
 	d12_MAnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_MAnorm_nbp_s) == 1
 	d12_MAnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_MAnorm_nbp_s) == 0
-	plot_dif_col(d1_raw_log2_s, d2_MAnorm_log2_s, d12_MAnorm_nbp_common_pk_s, d12_MAnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.MAnorm.pdf', sep=''))
+	plot_dif_col(d1_raw_s, d2_MAnorm_s, d12_MAnorm_nbp_common_pk_s, d12_MAnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.MAnorm.png', sep=''))
 
 
 	dir.create(paste(output_name, '_difnorm_compare', sep=''), showWarnings = FALSE)
-	mvfile2folder(from=paste(output_name, '.raw.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.raw.pdf', sep=''))
-	mvfile2folder(from=paste(output_name, '.QTnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.QTnorm.pdf', sep=''))
-	mvfile2folder(from=paste(output_name, '.PKnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.PKnorm.pdf', sep=''))
-	mvfile2folder(from=paste(output_name, '.TRnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.TRnorm.pdf', sep=''))
-	mvfile2folder(from=paste(output_name, '.MAnorm.pdf', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.MAnorm.pdf', sep=''))
+	mvfile2folder(from=paste(output_name, '.raw.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.raw.png', sep=''))
+	mvfile2folder(from=paste(output_name, '.QTnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.QTnorm.png', sep=''))
+	mvfile2folder(from=paste(output_name, '.PKnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.PKnorm.png', sep=''))
+	mvfile2folder(from=paste(output_name, '.TRnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.TRnorm.png', sep=''))
+	mvfile2folder(from=paste(output_name, '.MAnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.MAnorm.png', sep=''))
 }
 ################################################
 
@@ -228,30 +233,37 @@ plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 ### read raw signal
 print('read raw files')
 d1_raw = scan(sig1_raw)
-d1_raw_nbp = p.adjust(nbp_2r(d1_raw, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+#d1_raw_nbp = p.adjust(nbp_2r(d1_raw, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+d1_raw_nbp = p.adjust(scan(paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_raw = scan(sig2_raw)
-d2_raw_nbp = p.adjust(nbp_2r(d2_raw, 0.001, paste(sig2_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+#d2_raw_nbp = p.adjust(nbp_2r(d2_raw, 0.001, paste(sig2_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+d2_raw_nbp = p.adjust(scan(paste(sig2_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 
 ### read Quantile normalized signal
 print('read QTnorm files')
 d1_QTnorm = scan(sig1_QTnorm)
-d1_QTnorm_nbp = p.adjust(nbp_2r(d1_QTnorm, 0.001, paste(sig1_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+#d1_QTnorm_nbp = p.adjust(nbp_2r(d1_QTnorm, 0.001, paste(sig1_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+d2_QTnorm_nbp = p.adjust(scan(paste(sig1_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_QTnorm = scan(sig2_QTnorm)
-d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm, 0.001, paste(sig2_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+#d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm, 0.001, paste(sig2_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+d2_QTnorm_nbp = p.adjust(scan(paste(sig2_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 
 
 ### read PKnorm, total mean normalized, MAnorm
 print('read PKnorm files')
 d2_PKnorm = scan(sig2_PKnorm)
-d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm, 0.001, paste(sig2_raw, '.PKnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+#d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm, 0.001, paste(sig2_raw, '.PKnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+d2_PKnorm_nbp = p.adjust(scan(paste(sig2_raw, '.PKnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_PKnorm_weight = scan(sig2_PKnorm_weight)
 d2_PKnorm_idx = scan(sig2_PKnorm_idx)
 print('read TRnorm files')
 d2_TRnorm = scan(sig2_TRnorm)
 d2_TRnorm_nbp = p.adjust(nbp_2r(d2_TRnorm, 0.001, paste(sig2_raw, '.TRnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+d2_TRnorm_nbp = p.adjust(scan(paste(sig2_raw, '.TRnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 print('read MAnorm files')
 d2_MAnorm = scan(sig2_MAnorm)
 d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001, paste(sig2_raw, '.MAnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
+d2_MAnorm_nbp = p.adjust(scan(paste(sig2_raw, '.MAnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 
 print('plot 5 files')
 plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
