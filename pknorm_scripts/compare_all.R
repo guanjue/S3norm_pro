@@ -243,7 +243,7 @@ d2_raw_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/
 print('read QTnorm files')
 d1_QTnorm = scan(sig1_QTnorm)
 #d1_QTnorm_nbp = p.adjust(nbp_2r(d1_QTnorm, 0.001, paste(sig1_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
-d2_QTnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig1_raw, '.QTnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
+d1_QTnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig1_raw, '.QTnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 d2_QTnorm = scan(sig2_QTnorm)
 #d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm, 0.001, paste(sig2_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 d2_QTnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig2_raw, '.QTnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
