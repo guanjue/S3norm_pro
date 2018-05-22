@@ -235,7 +235,7 @@ print('read raw files')
 d1_raw = scan(sig1_raw)
 #d1_raw_nbp = p.adjust(nbp_2r(d1_raw, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d1_raw_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig1_raw, '.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
-d1_raw_nbp = p.adjust(10^(d1_raw), method='fdr') < fdr_thresh
+d1_raw_nbp = p.adjust(10^(-d1_raw), method='fdr') < fdr_thresh
 #d1_raw_log2 = log2(d1_raw+0.1)
 #d1_raw_nbp = p.adjust(pnorm(-((d1_raw_log2-mean(d1_raw_log2))/sd(d1_raw_log2))), method='fdr') < fdr_thresh
 #d1_raw_nbp = pnorm(-((d1_raw_log2-mean(d1_raw_log2))/sd(d1_raw_log2))) < fdr_thresh
