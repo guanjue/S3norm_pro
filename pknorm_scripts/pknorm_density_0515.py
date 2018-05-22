@@ -238,6 +238,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	if p_method == 'p':
 		sig1_p = 10.0**(-sig1)
 		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
+		write2d_array(sig1_z_p_fdr.reshape(sig1_z_p_fdr.shape[0],1), sig1_wg_raw + '.nbp.txt')
 		sig1_binary = (sig1_z_p_fdr < fdr_thresh) * 1.0
 		sig1_binary[sig1<sig_thresh] = 3.0		
 	elif p_method == 'nb':
@@ -278,6 +279,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		call('Rscript ' + script_folder + 'nbp_0326.R ' + sig2_wg_raw + ' ' + sig2_wg_raw + '.nbp.txt', shell=True)
 		sig2_p = read2d_array(sig2_wg_raw + '.nbp.txt', float)#[idx]
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
+		write2d_array(sig2_z_p_fdr.reshape(sig2_z_p_fdr.shape[0],1), sig2_wg_raw + '.nbp.txt')
 		sig2_binary = (sig2_z_p_fdr < fdr_thresh) * 1.0
 		sig2_binary[sig2<sig_thresh] = 3.0
 	elif p_method == 'gmm':
@@ -426,6 +428,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	if p_method == 'p':
 		sig2_norm_p = 10.0**(-sig2_norm)
 		sig2_norm_p_fdr = p_adjust(sig2_norm_p, 'fdr')
+		write2d_array(sig2_norm_p_fdr.reshape(sig2_norm_p_fdr.shape[0],1), sig2_output_name + '.pknorm.txt' + '.nbp.txt')
 		sig2_norm_binary = (sig2_norm_p_fdr < fdr_thresh) * 1.0
 		sig2_norm_binary[sig2_norm<sig_thresh] = 3.0	
 	elif p_method == 'nb':
@@ -540,6 +543,9 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		call('mv '+sig2_output_name + '.weight.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig2_output_name + '.idx.txt '+sig2_output_name+'_output/', shell=True)
 	elif p_method == 'p':
+		call('mv '+sig2_output_name+'.pknorm.txt.nbp.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig1_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
+		call('mv '+sig2_wg_raw+'.nbp.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig2_output_name + '.weight.txt '+sig2_output_name+'_output/', shell=True)
 		call('mv '+sig2_output_name + '.idx.txt '+sig2_output_name+'_output/', shell=True)
 
