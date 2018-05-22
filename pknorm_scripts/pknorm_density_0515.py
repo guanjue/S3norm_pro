@@ -271,7 +271,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(sig1_pk_num)
 
 	if p_method == 'p':
-		sig2_p = 10.0**(-sig1)
+		sig2_p = 10.0**(-sig2)
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
 		sig2_binary = (sig2_z_p_fdr < fdr_thresh) * 1.0
 		sig2_binary[sig2<sig_thresh] = 3.0	
