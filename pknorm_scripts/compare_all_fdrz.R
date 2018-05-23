@@ -236,7 +236,7 @@ d1_raw = scan(sig1_raw)
 #d1_raw_nbp = p.adjust(nbp_2r(d1_raw, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d1_raw_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig1_raw, '.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 #d1_raw_nbp = p.adjust(10^(-d1_raw), method='fdr') < fdr_thresh
-#d1_raw_log2 = log2(d1_raw+0.1)
+d1_raw_log2 = d1_raw
 d1_raw_nbp = p.adjust(pnorm(-((d1_raw_log2-mean(d1_raw_log2))/sd(d1_raw_log2))), method='fdr') < fdr_thresh
 #d1_raw_nbp = pnorm(-((d1_raw_log2-mean(d1_raw_log2))/sd(d1_raw_log2))) < fdr_thresh
 
@@ -244,7 +244,7 @@ d2_raw = scan(sig2_raw)
 #d2_raw_nbp = p.adjust(nbp_2r(d2_raw, 0.001, paste(sig2_raw, '.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d2_raw_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig2_raw, '.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 #d2_raw_nbp = p.adjust(10^(-d2_raw), method='fdr') < fdr_thresh
-#d2_raw_log2 = log2(d2_raw+0.1)
+d2_raw_log2 = d2_raw
 d2_raw_nbp = p.adjust(pnorm(-((d2_raw_log2-mean(d2_raw_log2))/sd(d2_raw_log2))), method='fdr') < fdr_thresh
 #d2_raw_nbp = pnorm(-((d2_raw_log2-mean(d2_raw_log2))/sd(d2_raw_log2))) < fdr_thresh
 
@@ -254,7 +254,7 @@ d1_QTnorm = scan(sig1_QTnorm)
 #d1_QTnorm_nbp = p.adjust(nbp_2r(d1_QTnorm, 0.001, paste(sig1_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d1_QTnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig1_raw, '.QTnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 #d1_QTnorm_nbp = p.adjust(10^(-d1_QTnorm), method='fdr') < fdr_thresh
-#d1_QTnorm_log2 = log2(d1_QTnorm+0.1)
+d1_QTnorm_log2 = d1_QTnorm
 d1_QTnorm_nbp = p.adjust(pnorm(-((d1_QTnorm_log2-mean(d1_QTnorm_log2))/sd(d1_QTnorm_log2))), method='fdr') < fdr_thresh
 #d1_QTnorm_nbp = pnorm(-((d1_QTnorm_log2-mean(d1_QTnorm_log2))/sd(d1_QTnorm_log2))) < fdr_thresh
 
@@ -262,7 +262,7 @@ d2_QTnorm = scan(sig2_QTnorm)
 #d2_QTnorm_nbp = p.adjust(nbp_2r(d2_QTnorm, 0.001, paste(sig2_raw, '.QTnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d2_QTnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig2_raw, '.QTnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 #d2_QTnorm_nbp = p.adjust(10^(-d2_QTnorm), method='fdr') < fdr_thresh
-#d2_QTnorm_log2 = log2(d2_QTnorm+0.1)
+d2_QTnorm_log2 = d2_QTnorm
 d2_QTnorm_nbp = p.adjust(pnorm(-((d2_QTnorm_log2-mean(d2_QTnorm_log2))/sd(d2_QTnorm_log2))), method='fdr') < fdr_thresh
 #d2_QTnorm_nbp = pnorm(-((d2_QTnorm_log2-mean(d2_QTnorm_log2))/sd(d2_QTnorm_log2))) < fdr_thresh
 
@@ -272,7 +272,7 @@ d2_PKnorm = scan(sig2_PKnorm)
 #d2_PKnorm_nbp = p.adjust(nbp_2r(d2_PKnorm, 0.001, paste(sig2_raw, '.PKnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d2_PKnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig2_raw, '.PKnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 #d2_PKnorm_nbp = p.adjust(10^(-d2_PKnorm), method='fdr') < fdr_thresh
-#d2_PKnorm_log2 = log2(d2_PKnorm+0.1)
+d2_PKnorm_log2 = d2_PKnorm
 d2_PKnorm_nbp = p.adjust(pnorm(-((d2_PKnorm_log2-mean(d2_PKnorm_log2))/sd(d2_PKnorm_log2))), method='fdr') < fdr_thresh
 #d2_PKnorm_nbp = pnorm(-((d2_PKnorm_log2-mean(d2_PKnorm_log2))/sd(d2_PKnorm_log2))) < fdr_thresh
 
@@ -283,7 +283,7 @@ d2_TRnorm = scan(sig2_TRnorm)
 #d2_TRnorm_nbp = p.adjust(nbp_2r(d2_TRnorm, 0.001, paste(sig2_raw, '.TRnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d2_TRnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig2_raw, '.TRnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 #d2_TRnorm_nbp = p.adjust(10^(-d2_TRnorm), method='fdr') < fdr_thresh
-#d2_TRnorm_log2 = log2(d2_TRnorm+0.1)
+d2_TRnorm_log2 = d2_TRnorm
 d2_TRnorm_nbp = p.adjust(pnorm(-((d2_TRnorm_log2-mean(d2_TRnorm_log2))/sd(d2_TRnorm_log2))), method='fdr') < fdr_thresh
 #d2_TRnorm_nbp = pnorm(-((d2_TRnorm_log2-mean(d2_TRnorm_log2))/sd(d2_TRnorm_log2))) < fdr_thresh
 
@@ -292,7 +292,7 @@ d2_MAnorm = scan(sig2_MAnorm)
 #d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001, paste(sig2_raw, '.MAnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
 #d2_MAnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig2_raw, '.MAnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
 #d2_MAnorm_nbp = p.adjust(10^(-d2_MAnorm), method='fdr') < fdr_thresh
-#d2_MAnorm_log2 = log2(d2_MAnorm+0.1)
+d2_MAnorm_log2 = d2_MAnorm
 d2_MAnorm_nbp = p.adjust(pnorm(-((d2_MAnorm_log2-mean(d2_MAnorm_log2))/sd(d2_MAnorm_log2))), method='fdr') < fdr_thresh
 #d2_MAnorm_nbp = pnorm(-((d2_MAnorm_log2-mean(d2_MAnorm_log2))/sd(d2_MAnorm_log2))) < fdr_thresh
 
