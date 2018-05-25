@@ -14,7 +14,9 @@ sample_num = args[4]
 p_method = args[5]
 fdr_thresh = args[6]
 
-source('/Users/universe/Documents/2018_BG/PKnorm/pknorm_scripts/nbp_0326_0525.R')
+script_folder = args[7]
+
+source(paste(script_folder, 'nbp_0326_0525.R', sep=''))
 
 set.seed(2018)
 ### read signal
