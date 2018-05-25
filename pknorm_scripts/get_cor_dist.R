@@ -5,6 +5,7 @@ data0 =read.table('rna_rpk.pcsorted.txt', header=F)
 total_rpk = colSums(data0[,-1])
 rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*1000000))
 rna_tpm_max = apply(rna_tpm, 1, max)
+rna_tpm_min = apply(rna_tpm, 1, min)
 
 methods = c('raw', 'pknorm', 'qtnorm', 'trnorm', 'manorm')
 
@@ -48,6 +49,36 @@ for (m in methods){
 	kl_dist_bg = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_bg[!is.na(cor_0_bg)], bw=bw_used)$y)$D2
 	kl_dist_shuffle = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_shuffle[!is.na(cor_0_shuffle)], bw=bw_used)$y)$D2
 }
+
+c_pk = c()
+c_qt = c()
+
+
+for (i in c(1:11)){
+	m_b='pknorm_density'
+	m_c='qtnorm'
+	cor_method = 'spearman'
+	d_raw_pk = read.table(paste('tss_h3k4me3.pcsorted.', m_b, '.txt', sep=''), header=F)
+	d_raw_qt = read.table(paste('tss_h3k4me3.pcsorted.', m_c, '.txt', sep=''), header=F)
+	used_id = (abs(log2(rna_tpm[,i]+0.01)-log2(rna_tpm[,i+1]+0.01)) > 2) 
+	print(sum(used_id))
+	a=(log2(as.vector((rna_tpm[used_id,i]))+0.01)-log2(as.vector((rna_tpm[used_id,i+1]))+0.01))
+	b=(log2(as.vector(as.matrix((d_raw_pk[used_id,i])))+0.01)-log2(as.vector(as.matrix((d_raw_pk[used_id,i+1])))+0.01))
+	c=(log2(as.vector(as.matrix((d_raw_qt[used_id,i])))+0.01)-log2(as.vector(as.matrix((d_raw_qt[used_id,i+1])))+0.01))
+	par(mfrow=c(1,2))
+	plot((a),(b), log='', xlim=c(min(cbind(a,b)), max(cbind(a,b)))+0.01, ylim=c(min(cbind(a,b)), max(cbind(a,b)))+0.01, main=toString(sum(a*b>=0)/sum(a*b!='1')))#main=toString(cor(a,b,method=cor_method)))
+	abline(0,1,col='red')
+	plot((a),(c), log='', xlim=c(min(cbind(a,c)), max(cbind(a,c)))+0.01, ylim=c(min(cbind(a,c)), max(cbind(a,c)))+0.01, main=toString(sum(a*c>=0)/sum(a*c!='1')))#main=toString(cor(a,c,method=cor_method)))
+	abline(0,1,col='red')
+	print(i)
+	print(cor(a,b))
+	print(cor(a,c))
+	c_pk[i] = cor(a,b, method=cor_method)
+	c_qt[i] = cor(a,c, method=cor_method)
+}
+
+
+cbind(c_pk, c_qt)
 
 plot(rna_tpm[rna_tpm_max>=tpm_lim,3]/rna_tpm[rna_tpm_max>=tpm_lim,2], d_raw[rna_tpm_max>=tpm_lim,3]/d_raw[rna_tpm_max>=tpm_lim,2], log='xy', xlim=c(0.0001,10000), ylim=c(0.0001,10000),pch=16)
 abline(0,1, col='red')
@@ -126,6 +157,9 @@ dev.off()
 for (i in c(1:5)){
 	kl_dist_cor_dist_bg = kl.dist(density(cor_dif_matrix[,i], bw=bw_used)$y, density(cor_dif_matrix_bg[,i], bw=bw_used)$y)$D2
 	kl_dist_cor_dist_shuffle = kl.dist(density(cor_dif_matrix[,i], bw=bw_used)$y, density(cor_dif_matrix_shuffle[,i], bw=bw_used)$y)$D2
+	#-log10(ks.test(cor_dif_matrix_shuffle[,i], cor_dif_matrix[,i], alternative='greater')$p)#
+	#print(ks.test(cor_dif_matrix_bg[,i], cor_dif_matrix[,i], alternative='greater'))
+	#print(ks.test(cor_dif_matrix_bg[,i], cor_dif_matrix[,i], alternative='greater')$statistic)
 	png(paste('tss_h3k4me3.pcsorted.difcor.', methods[i], '.png', sep=''))
 	plot(density(cor_dif_matrix[,i], bw=bw_used), col='green', main=paste('KL-dist = ', toString(round(kl_dist_cor_dist_bg, digits=3)), sep=''), ylim=c(0,6))
 	#lines(density(cor_dif_matrix_shuffle[,i], bw=bw_used), col='black')

@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.stats import norm, nbinom, gaussian_kde
+from skmisc import loess
 
 ################################################################################################
 ### read 2d array
@@ -378,7 +379,38 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		small_num = 0.1
 	print('added small number: '+str(small_num))
 	### get transformation factor
+	M_all = np.log2(sig1_s+small_num) - np.log2(sig2_s+small_num)
+	A_all = 0.5 * (np.log2(sig1_s+small_num) + np.log2(sig2_s+small_num))
 
+	M_cpk = np.log2(sig1_cpk+small_num) - np.log2(sig2_cpk+small_num) 
+	A_cpk = 0.5 * (np.log2(sig1_cpk+small_num) + np.log2(sig2_cpk+small_num))
+
+	M_cbg = np.log2(sig1_cbg+small_num) - np.log2(sig2_cbg+small_num) 
+	A_cbg = 0.5 * (np.log2(sig1_cbg+small_num) + np.log2(sig2_cbg+small_num))
+
+	print('loess...')
+	print(np.concatenate((A_cpk, A_cbg)).shape)
+	print(np.concatenate((pk_weight, bg_weight)).shape)
+	loess_model = loess.loess(np.concatenate((A_cpk, A_cbg)), np.concatenate((M_cpk, M_cbg)), weight=np.concatenate((pk_weight, bg_weight)))
+	print(loess_model)
+	#M_all_norm = loess.loess_prediction(A_all, loess_model)
+	M_cpk_norm = loess.loess_prediction(np.concatenate((A_cpk, A_cbg)), loess_model)
+	M_cbg_norm = loess.loess_prediction(A_cbg, loess_model)
+
+	plt.figure()
+	plt.scatter(A_all, M_all, marker='.', color='dodgerblue')
+	plt.scatter(A_cbg, M_cbg, marker='.', color='gray')
+	plt.scatter(A_cpk, M_cpk, marker='.', color='coral')
+	plt.savefig(sig2_output_name + '.MA.png')
+
+	plt.figure()
+	plt.scatter(A_all, M_all_norm, marker='.', color='dodgerblue')
+	plt.scatter(A_cbg, M_cbg_norm, marker='.', color='gray')
+	plt.scatter(A_cpk, M_cpk_norm, marker='.', color='coral')
+	plt.savefig(sig2_output_name + '.MA_norm.png')
+
+
+	#AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500, all_len, pk_weight, bg_weight)
 	AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500, all_len, pk_weight, bg_weight)
 	#AB = NewtonRaphsonMethod(sig1_cpk,sig1_cbg, sig2_cpk,sig2_cbg, 1.0, 2.0, moment, 1e-5, 500)
 	A=AB[0]
