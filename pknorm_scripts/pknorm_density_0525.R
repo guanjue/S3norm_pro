@@ -10,9 +10,9 @@ ref = args[1]
 tar = args[2]
 output = args[3]
 
-sample_num = args[4]
+sample_num = as.numeric(args[4])
 p_method = args[5]
-fdr_thresh = args[6]
+fdr_thresh = as.numeric(args[6])
 
 script_folder = args[7]
 
