@@ -6,26 +6,32 @@ total_rpk = colSums(data0[,-1])
 rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*1000000))
 rna_tpm_max = apply(rna_tpm, 1, max)
 rna_tpm_min = apply(rna_tpm, 1, min)
+rna_tpm_min = apply(rna_tpm, 1, min)
+tpm_lim=5
+rna_tpm_non0_num = apply(rna_tpm, 1, function(x) sum(x!=0))
+used_id_rna_tpm = (rna_tpm_max>=tpm_lim) * (rna_tpm_non0_num>=dim(rna_tpm)[2]) >0
 
-methods = c('raw', 'pknorm', 'qtnorm', 'trnorm', 'manorm')
+methods = c('raw', 'pknorm', 'loessnorm', 'qtnorm', 'trnorm', 'manorm')
 
 for (m in methods){
 	print(m)
 	set.seed(1)
 	bw_used = 0.1
-	cor_method = 'pearson'
-	small_num = 0.1
-	tpm_lim=2
-	shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
+	cor_method = 'spearman'
+	small_num = 0.01
+	#shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
+	shuffle_id = sample(dim(rna_tpm)[2],dim(rna_tpm)[2])
 	d_raw = read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)
-	cor_0 = apply(cbind(rna_tpm, d_raw)[rna_tpm_max>=tpm_lim,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
-	cor_0_shuffle = apply(cbind(rna_tpm, d_raw[shuffle_id,])[rna_tpm_max>=tpm_lim,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
+	cor_0 = apply(cbind(rna_tpm, d_raw)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
+	cor_0_shuffle = apply(cbind(rna_tpm, d_raw[,shuffle_id])[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
 	d_raw_bg = read.table(paste('tss_h3k4me3.pcsorted.', m, '.1000kb.txt', sep=''), header=F)
-	cor_0_bg = apply(cbind(rna_tpm, d_raw_bg)[rna_tpm_max>=tpm_lim,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
+	cor_0_bg = apply(cbind(rna_tpm, d_raw_bg)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
 	kl_dist_bg = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_bg[!is.na(cor_0_bg)], bw=bw_used)$y)$D2
 	kl_dist_shuffle = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_shuffle[!is.na(cor_0_shuffle)], bw=bw_used)$y)$D2
+	paired_t = t.test(cor_0, cor_0_shuffle, paired=TRUE, alternative = 'greater')
+	paired_t_statistic = paired_t$statistic	
 	png(paste('tss_h3k4me3.pcsorted.', m, '.png', sep=''))
-	plot(density(cor_0[!is.na(cor_0)], bw=bw_used), col='green', main=paste('KL-dist = ', toString(kl_dist_bg), ' ', toString(kl_dist_shuffle), sep=''), ylim=c(0,1.2))
+	plot(density(cor_0[!is.na(cor_0)], bw=bw_used), col='green', main=paste('Paired-t-test-statistic = ', toString(round(paired_t_statistic, digits=3)), '; ', 'KL-dist = ', toString(round(kl_dist_bg, digits=3)), ' ', toString(round(kl_dist_shuffle, digits=3)), sep=''), ylim=c(0,1.2))
 	lines(density(cor_0_bg[!is.na(cor_0_bg)], bw=bw_used), col='black')
 	lines(density(cor_0_shuffle[!is.na(cor_0_shuffle)], bw=bw_used), col='blue')
 	dev.off()
@@ -83,7 +89,7 @@ cbind(c_pk, c_qt)
 plot(rna_tpm[rna_tpm_max>=tpm_lim,3]/rna_tpm[rna_tpm_max>=tpm_lim,2], d_raw[rna_tpm_max>=tpm_lim,3]/d_raw[rna_tpm_max>=tpm_lim,2], log='xy', xlim=c(0.0001,10000), ylim=c(0.0001,10000),pch=16)
 abline(0,1, col='red')
 
-methods = c('raw', 'pknorm', 'qtnorm', 'trnorm', 'manorm')
+methods = c('raw', 'pknorm', 'loessnorm', 'qtnorm', 'trnorm', 'manorm')
 library(MASS)
 library(RColorBrewer)
 k <- 10
@@ -92,10 +98,10 @@ my.cols <- rev(brewer.pal(k, "RdYlBu"))
 cor_dif_matrix = c()
 cor_dif_matrix_bg = c()
 cor_dif_matrix_shuffle = c()
-tpm_lim=1
+tpm_lim=2
 used_gene_number = c()
 count_id = 0
-cor_method = 'pearson'
+cor_method = 'spearman'
 for (m in methods){
 	print(m)
 	d_raw = read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)
@@ -154,14 +160,16 @@ hist((used_gene_number), breaks=20)
 dev.off()
 
 
-for (i in c(1:5)){
+for (i in c(1:6)){
 	kl_dist_cor_dist_bg = kl.dist(density(cor_dif_matrix[,i], bw=bw_used)$y, density(cor_dif_matrix_bg[,i], bw=bw_used)$y)$D2
 	kl_dist_cor_dist_shuffle = kl.dist(density(cor_dif_matrix[,i], bw=bw_used)$y, density(cor_dif_matrix_shuffle[,i], bw=bw_used)$y)$D2
+	paired_t = t.test(cor_dif_matrix[,i], cor_dif_matrix_bg[,i], paired=TRUE, alternative = 'greater')
+	paired_t_statistic = paired_t$statistic
 	#-log10(ks.test(cor_dif_matrix_shuffle[,i], cor_dif_matrix[,i], alternative='greater')$p)#
 	#print(ks.test(cor_dif_matrix_bg[,i], cor_dif_matrix[,i], alternative='greater'))
 	#print(ks.test(cor_dif_matrix_bg[,i], cor_dif_matrix[,i], alternative='greater')$statistic)
 	png(paste('tss_h3k4me3.pcsorted.difcor.', methods[i], '.png', sep=''))
-	plot(density(cor_dif_matrix[,i], bw=bw_used), col='green', main=paste('KL-dist = ', toString(round(kl_dist_cor_dist_bg, digits=3)), sep=''), ylim=c(0,6))
+	plot(density(cor_dif_matrix[,i], bw=bw_used), col='green', main=paste('paired_t_statistic = ', toString(round(paired_t_statistic, digits=3)), sep=''), ylim=c(0,6))
 	#lines(density(cor_dif_matrix_shuffle[,i], bw=bw_used), col='black')
 	lines(density(cor_dif_matrix_bg[,i], bw=bw_used), col='blue')
 	dev.off()
@@ -190,8 +198,8 @@ abline(0,1, col='red')
 dev.off()
 
 png('test.png')
-boxplot((cor_dif_matrix), use.cols = TRUE, xaxt='n')
-axis(1, at=1:5, labels=methods)
+boxplot((cor_dif_matrix[,order(colMeans(cor_dif_matrix))]), use.cols = TRUE, xaxt='n')
+axis(1, at=1:6, labels=methods[order(colMeans(cor_dif_matrix))])
 dev.off()
 
 

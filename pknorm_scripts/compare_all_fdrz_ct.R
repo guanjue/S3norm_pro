@@ -153,7 +153,7 @@ mvfile2folder = function(from, to) {
 }
 
 ################################################
-plot_6 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d2_Loessnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, d2_Loessnorm_nbp, output_name){
+plot_5 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name){
 	### convert to log2 scale
 	#d1_raw_log2 = log2(d1_raw+0.1)
 	#d2_raw_log2 = log2(d2_raw+0.1)
@@ -178,7 +178,6 @@ plot_6 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 	d2_TRnorm_s = d2_TRnorm[sample_id]
 	d2_MAnorm_s = d2_MAnorm[sample_id]
 	d2_QTnorm_s = d2_QTnorm[sample_id]
-	d2_Loessnorm_s = d2_Loessnorm[sample_id]
 
 	d2_PKnorm_weight_s = d2_PKnorm_weight
 
@@ -190,10 +189,9 @@ plot_6 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 	d2_TRnorm_nbp_s = d2_TRnorm_nbp[sample_id]
 	d2_MAnorm_nbp_s = d2_MAnorm_nbp[sample_id]
 	d2_QTnorm_nbp_s = d2_QTnorm_nbp[sample_id]
-	d2_Loessnorm_nbp_s = d2_Loessnorm_nbp[sample_id]
 
 	### get max and min
-	all_matrix_sample = cbind(d1_raw_s, d2_raw_s, d1_QTnorm_s, d2_PKnorm_s, d2_TRnorm_s, d2_MAnorm_s, d2_QTnorm_s, d2_Loessnorm_s)
+	all_matrix_sample = cbind(d1_raw_s, d2_raw_s, d1_QTnorm_s, d2_PKnorm_s, d2_TRnorm_s, d2_MAnorm_s, d2_QTnorm_s)
 	min_sig = min(all_matrix_sample)
 	max_sig = max(all_matrix_sample)
 
@@ -205,10 +203,6 @@ plot_6 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 	d12_QTnorm_nbp_common_pk_s = (d1_QTnorm_nbp_s * d2_QTnorm_nbp_s) == 1
 	d12_QTnorm_nbp_common_bg_s = (d1_QTnorm_nbp_s + d2_QTnorm_nbp_s) == 0
 	plot_dif_col(d1_QTnorm_s, d2_QTnorm_s, d12_QTnorm_nbp_common_pk_s, d12_QTnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.QTnorm.png', sep=''))
-
-	d12_Loessnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_Loessnorm_nbp_s) == 1
-	d12_Loessnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_Loessnorm_nbp_s) == 0
-	plot_dif_col(d1_raw_s, d2_Loessnorm_s, d12_Loessnorm_nbp_common_pk_s, d12_Loessnorm_nbp_common_bg_s, min_sig, max_sig, paste(output_name, '.Loessnorm.png', sep=''))
 
 	d12_PKnorm_nbp_common_pk_s = (d1_raw_nbp_s * d2_PKnorm_nbp_s) == 1
 	d12_PKnorm_nbp_common_bg_s = (d1_raw_nbp_s + d2_PKnorm_nbp_s) == 0
@@ -233,7 +227,6 @@ plot_6 = function(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKn
 	mvfile2folder(from=paste(output_name, '.PKnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.PKnorm.png', sep=''))
 	mvfile2folder(from=paste(output_name, '.TRnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.TRnorm.png', sep=''))
 	mvfile2folder(from=paste(output_name, '.MAnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.MAnorm.png', sep=''))
-	mvfile2folder(from=paste(output_name, '.Loessnorm.png', sep=''), to=paste(output_name, '_difnorm_compare/', output_name, '.MAnorm.png', sep=''))
 }
 ################################################
 
@@ -304,18 +297,9 @@ d2_MAnorm_log2 = d2_MAnorm
 d2_MAnorm_nbp = p.adjust(pnorm(-((d2_MAnorm_log2-mean(d2_MAnorm_log2))/sd(d2_MAnorm_log2))), method='fdr') < fdr_thresh
 #d2_MAnorm_nbp = pnorm(-((d2_MAnorm_log2-mean(d2_MAnorm_log2))/sd(d2_MAnorm_log2))) < fdr_thresh
 
-print('read Loessnorm files')
-d2_Loessnorm = scan(sig2_Loessnorm)
-#d2_MAnorm_nbp = p.adjust(nbp_2r(d2_MAnorm, 0.001, paste(sig2_raw, '.MAnorm.nbp_2r.txt', sep='')), method='fdr') < fdr_thresh
-#d2_MAnorm_nbp = p.adjust(as.matrix(read.table(paste(output_name, '_difnorm_compare/', sig2_raw, '.MAnorm.nbp_2r.txt', sep=''))), method='fdr') < fdr_thresh
-#d2_MAnorm_nbp = p.adjust(10^(-d2_MAnorm), method='fdr') < fdr_thresh
-d2_Loessnorm_log2 = Loessnorm
-d2_Loessnorm_nbp = p.adjust(pnorm(-((d2_Loessnorm_log2-mean(d2_Loessnorm_log2))/sd(d2_Loessnorm_log2))), method='fdr') < fdr_thresh
-#d2_MAnorm_nbp = pnorm(-((d2_MAnorm_log2-mean(d2_MAnorm_log2))/sd(d2_MAnorm_log2))) < fdr_thresh
 
-
-print('plot 6 files')
-plot_6(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d2_Loessnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, d2_Loessnorm_nbp, output_name)
+print('plot 5 files')
+plot_5(d1_raw, d2_raw, d1_QTnorm, d2_PKnorm, d2_PKnorm_weight, d2_PKnorm_idx, d2_TRnorm, d2_MAnorm, d2_QTnorm, d1_raw_nbp, d2_raw_nbp, d1_QTnorm_nbp, d2_PKnorm_nbp, d2_TRnorm_nbp, d2_MAnorm_nbp, d2_QTnorm_nbp, output_name)
 
 print('get numeric summary')
 FRiP_pknum_JI_raw = get_FRiP_pknum_jaccard_index(d1_raw, d2_raw, d1_raw_nbp, d2_raw_nbp)
@@ -323,10 +307,9 @@ FRiP_pknum_JI_QTnorm = get_FRiP_pknum_jaccard_index(d1_QTnorm, d2_QTnorm, d1_QTn
 FRiP_pknum_JI_PKnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_PKnorm, d1_raw_nbp, d2_PKnorm_nbp)
 FRiP_pknum_JI_TRnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_TRnorm, d1_raw_nbp, d2_TRnorm_nbp)
 FRiP_pknum_JI_MAnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_MAnorm, d1_raw_nbp, d2_MAnorm_nbp)
-FRiP_pknum_JI_Loessnorm = get_FRiP_pknum_jaccard_index(d1_raw, d2_Loessnorm, d1_raw_nbp, d2_Loessnorm_nbp)
 
-FRiP_pknum_JI_matrix = as.matrix(rbind(FRiP_pknum_JI_raw, FRiP_pknum_JI_QTnorm, FRiP_pknum_JI_Loessnorm, FRiP_pknum_JI_PKnorm, FRiP_pknum_JI_TRnorm, FRiP_pknum_JI_MAnorm))
-rownames(FRiP_pknum_JI_matrix) = c('raw', 'QTnorm', 'Loess', 'PKnorm', 'TRnorm', 'MAnorm')
+FRiP_pknum_JI_matrix = as.matrix(rbind(FRiP_pknum_JI_raw, FRiP_pknum_JI_QTnorm, FRiP_pknum_JI_PKnorm, FRiP_pknum_JI_TRnorm, FRiP_pknum_JI_MAnorm))
+rownames(FRiP_pknum_JI_matrix) = c('raw', 'QTnorm', 'PKnorm', 'TRnorm', 'MAnorm')
 colnames(FRiP_pknum_JI_matrix) = c('sig_x_FRiP', 'sig_y_FRiP', 'sig_x_pknum', 'sig_y_pknum', 'jaccard_index', 'adjusted_rand_index', 'pk_overlap_num', 'pk_union_num', 'sig_x_pk_mean', 'sig_y_pk_mean', 'sig_x_bg_mean', 'sig_y_bg_mean', 'sig_x_total_mean', 'sig_y_total_mean', 'FRiP_JI_all', 'FRiP_JI_x', 'FRiP_JI_y', 'FRuP_JI_all', 'FRuP_JI_x', 'FRuP_JI_y')
 
 write.table(FRiP_pknum_JI_matrix, paste(output_name, '.summary_matrix.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
