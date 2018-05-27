@@ -13,8 +13,9 @@ output = args[3]
 sample_num = as.numeric(args[4])
 p_method = args[5]
 fdr_thresh = as.numeric(args[6])
+rank_top = as.numeric(args[7])
 
-script_folder = args[7]
+script_folder = args[8]
 
 source(paste(script_folder, 'nbp_0326_0525.R', sep=''))
 
@@ -39,9 +40,25 @@ if (p_method == 'nb'){
 }
 
 ref_pk_num = sum(ref_p_pk_binary==1.0)
+tar_pk_num = sum(tar_p_pk_binary==1.0)
 print('ref_pk_num')
 print(ref_pk_num)
-tar_pk_num = sum(tar_p_pk_binary==1.0)
+print('tar_pk_num')
+print(tar_pk_num)
+### if smaller than 10000 pk, replace by top 10000
+if (ref_pk_num<rank_top){
+	print('ref: use top rank for peak')
+	ref_p_pk_binary = ref_p<=sort(ref_p,decreasing=FALSE)[rank_top]
+	ref_pk_num = sum(ref_p_pk_binary==1.0)
+}
+if (tar_pk_num<rank_top){
+	print('tar: use top rank for peak')
+	tar_p_pk_binary = ref_p<=sort(tar_p,decreasing=FALSE)[rank_top]
+	tar_pk_num = sum(tar_p_pk_binary==1.0)
+}
+
+print('ref_pk_num')
+print(ref_pk_num)
 print('tar_pk_num')
 print(tar_pk_num)
 print('Adjusted random index')
