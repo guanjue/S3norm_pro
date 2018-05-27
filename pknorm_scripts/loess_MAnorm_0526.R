@@ -33,7 +33,7 @@ sample_id[sample_num+2] = A_min_id
 ### get nbp & pk
 if (p_method == 'nb'){
 	ref_p = get_2r_nbp(ref_sig, paste(ref, '.nbp.txt', sep=''))
-	tar_p = get_2r_nbp(tar_sig, paste(ref, '.nbp.txt', sep=''))
+	tar_p = get_2r_nbp(tar_sig, paste(tar, '.nbp.txt', sep=''))
 	ref_p_pk_binary = p.adjust(ref_p, method='fdr') < fdr_thresh
 	tar_p_pk_binary = p.adjust(tar_p, method='fdr') < fdr_thresh
 }
@@ -185,7 +185,7 @@ write.table(tar_sig_norm, output, quote=FALSE, col.names=FALSE, row.names=FALSE,
 
 ### get nbp & pk
 if (p_method == 'nb'){
-	tar_norm_p = get_2r_nbp(tar_sig_norm, paste(ref, '.nbp.txt', sep=''))
+	tar_norm_p = get_2r_nbp(tar_sig_norm, paste(tar, '.norm.nbp.txt', sep=''))
 	tar_norm_p_pk_binary = p.adjust(tar_norm_p, method='fdr') < fdr_thresh
 }
 
