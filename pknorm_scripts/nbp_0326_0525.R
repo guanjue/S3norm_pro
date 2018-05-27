@@ -43,7 +43,7 @@ get_2r_nbp = function(sig, output_name){
 	nb_pval_2nd = apply(as.matrix(sig), MARGIN=1, function(x) pnbinom(x[1], sig_size_2nd, sig_prob_2nd, lower.tail=FALSE) )
 
 	### write output
-	if(!file.exists(output_name){
+	if(!file.exists(output_name)){
 		write.table(nb_pval_2nd, output_name, quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
 	}
 	return(nb_pval_2nd)
