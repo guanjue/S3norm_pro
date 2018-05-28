@@ -1,0 +1,8 @@
+cp MK_imm_ad.raw.bed MK_imm_ad.pknorm.bed
+cp MK_imm_ad.raw.bed MK_imm_ad.manorm.bed
+cp MK_imm_ad.raw.bed MK_imm_ad.loessnorm.bed
+cp MK_imm_ad.raw.bed MK_imm_ad.trnorm.bed
+
+
+
+

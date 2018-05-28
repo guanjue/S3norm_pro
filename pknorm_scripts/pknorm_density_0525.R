@@ -163,12 +163,12 @@ grid=100
 cpk_cbg_id_s = (cpk_id_s | cbg_id_s)
 
 print('get density weight (raw)')
-density_weight_s = get_density_weight_2d(A_all_s, M_all_s, grid)
+density_weight_s = get_density_weight_2d(A_all_s[cpk_cbg_id_s], M_all_s[cpk_cbg_id_s], grid)
 
 
 
 print('fit weighted loess model')
-weighted_loess_model = loess(M_all_s[cpk_cbg_id_s]~A_all_s[cpk_cbg_id_s], weights=density_weight_s[cpk_cbg_id_s], span=1, degree=2)
+weighted_loess_model = loess(M_all_s[cpk_cbg_id_s]~A_all_s[cpk_cbg_id_s], weights=density_weight_s, span=1, degree=2)
 print('fit loess model')
 M_all_pred = predict(weighted_loess_model, newdata=A_all)
 M_all_pred_s = M_all_pred[sample_id]
@@ -177,7 +177,7 @@ M_cpk_norm1_s = M_cpk_s - M_all_pred_s[cpk_id_s]
 M_cbg_norm1_s = M_cbg_s - M_all_pred_s[cbg_id_s]
 
 print('get density weight (norm1)')
-density_weight_norm1_s = get_density_weight_2d(A_all_s, M_all_norm1_s, grid)
+density_weight_norm1_s = get_density_weight_2d(A_all_s[cpk_cbg_id_s], M_all_norm1_s[cpk_cbg_id_s], grid)
 #density_weight_norm1 = density_weight
 
 
@@ -188,17 +188,19 @@ par(mfrow=c(1,2))
 #plot_MA_3parts(A_all, M_all, A_cpk, M_cpk, A_cbg, M_cbg, A_lim_lower, A_lim_upper)
 heatscatter(A_all_s, M_all_s, pch=16, ylim=c(-M_ylim, M_ylim), xlim=c(A_lim_lower, A_lim_upper), cex=0.6)
 abline(h=0, col='black', lwd=2)
+cpk_id_s_weight = cpk_id_s[cpk_cbg_id_s]
+cbg_id_s_weight = cbg_id_s[cpk_cbg_id_s]
 points(weighted_loess_model$x, weighted_loess_model$fitted,col="dodgerblue", pch=16, cex=0.6)
-lines(c(weighted.mean(A_cbg_s, density_weight_s[cbg_id_s]), weighted.mean(A_cpk_s, density_weight_s[cpk_id_s])), c(weighted.mean(M_cbg_s, density_weight_s[cbg_id_s]), weighted.mean(M_cpk_s, density_weight_s[cpk_id_s])), col='green', lty=2, lwd=3)
-points(weighted.mean(A_cpk_s, density_weight_s[cpk_id_s]), weighted.mean(M_cpk_s, density_weight_s[cpk_id_s]), pch=16, col='black', cex=1)
-points(weighted.mean(A_cbg_s, density_weight_s[cbg_id_s]), weighted.mean(M_cbg_s, density_weight_s[cbg_id_s]), pch=16, col='black', cex=1)
+lines(c(weighted.mean(A_cbg_s, density_weight_s[cbg_id_s_weight]), weighted.mean(A_cpk_s, density_weight_s[cpk_id_s_weight])), c(weighted.mean(M_cbg_s, density_weight_s[cbg_id_s_weight]), weighted.mean(M_cpk_s, density_weight_s[cpk_id_s_weight])), col='green', lty=2, lwd=3)
+points(weighted.mean(A_cpk_s, density_weight_s[cpk_id_s_weight]), weighted.mean(M_cpk_s, density_weight_s[cpk_id_s_weight]), pch=16, col='black', cex=1)
+points(weighted.mean(A_cbg_s, density_weight_s[cbg_id_s_weight]), weighted.mean(M_cbg_s, density_weight_s[cbg_id_s_weight]), pch=16, col='black', cex=1)
 
 ###### plot loess adjusted MA-plot
 heatscatter(A_all_s, (M_all_s-M_all_pred_s), pch=16, ylim=c(-M_ylim, M_ylim), xlim=c(A_lim_lower, A_lim_upper), cex=0.6)
 abline(h=0, col='black', lwd=2)
-lines(c(weighted.mean(A_cbg_s, density_weight_norm1_s[cbg_id_s]), weighted.mean(A_cpk_s, density_weight_norm1_s[cpk_id_s])), c(weighted.mean(M_cbg_norm1_s, density_weight_norm1_s[cbg_id_s]), weighted.mean(M_cpk_norm1_s, density_weight_norm1_s[cpk_id_s])), col='green', lty=2, lwd=3)
-points(weighted.mean(A_cpk_s, density_weight_norm1_s[cpk_id_s]), weighted.mean(M_cpk_norm1_s, density_weight_norm1_s[cpk_id_s]), pch=16, col='black', cex=1)
-points(weighted.mean(A_cbg_s, density_weight_norm1_s[cbg_id_s]), weighted.mean(M_cbg_norm1_s, density_weight_norm1_s[cbg_id_s]), pch=16, col='black', cex=1)
+lines(c(weighted.mean(A_cbg_s, density_weight_norm1_s[cbg_id_s_weight]), weighted.mean(A_cpk_s, density_weight_norm1_s[cpk_id_s_weight])), c(weighted.mean(M_cbg_norm1_s, density_weight_norm1_s[cbg_id_s_weight]), weighted.mean(M_cpk_norm1_s, density_weight_norm1_s[cpk_id_s_weight])), col='green', lty=2, lwd=3)
+points(weighted.mean(A_cpk_s, density_weight_norm1_s[cpk_id_s_weight]), weighted.mean(M_cpk_norm1_s, density_weight_norm1_s[cpk_id_s_weight]), pch=16, col='black', cex=1)
+points(weighted.mean(A_cbg_s, density_weight_norm1_s[cbg_id_s_weight]), weighted.mean(M_cbg_norm1_s, density_weight_norm1_s[cbg_id_s_weight]), pch=16, col='black', cex=1)
 
 dev.off()
 

@@ -1,3 +1,5 @@
+cd /Users/universe/Documents/2018_BG/pknorm_analysis/h3k4me3/tss/
+cd /storage/home/gzx103/scratch/vision/all_final_data/5end_reads_count/tss
 cat /storage/home/gzx103/group/projects/vision/rna/rnaHtseqCountsall.txt | awk -F '\t' -v OFS='\t' '{print $1, $2+$3, $4+$5, $6+$7, $8+$9, $10+$11, $12+$13, $14+$15, $16+$17, $18+$18, $19+$20, $21+$22, $23+$24}' > rnaHtseqCountsall_replicate_merge.txt
 
 cat /storage/home/gzx103/group/projects/vision/rna/gencode.vM4.annotation.bed | awk -F '\t' -v OFS='\t' '{if ($5=="protein_coding") print $1,$2,$3,$4,$5,$6}' > gencode.vM4.annotation.pc.bed
@@ -7,11 +9,11 @@ python ~/scratch/vision/5end/pknorm_16lim/pcor_100lim_mean/tss_sig/vlookup.py -t
 
 python ~/scratch/vision/5end/pknorm_16lim/pcor_100lim_mean/tss_sig/vlookup.py -t rnaHtseqCountsall_replicate_merge.txt -m 1 -s B_SPL.manorm.bed.tss.bed -n 4 -o rnaHtseqCountsall_replicate_merge.pcsorted.txt -k F
 
-paste rnaHtseqCountsall_replicate_merge.pcsorted.txt gencode.vM4.annotation.pc.sorted.bed | awk -F '\t' -v OFS='\t' '{print $1, $2, $3/($16-$15)*1000, $4/($16-$15)*1000, $5/($16-$15)*1000, $6/($16-$15)*1000, $7/($16-$15)*1000, $8/($16-$15)*1000, $9/($16-$15)*1000, $10/($16-$15)*1000, $11/($16-$15)*1000, $12/($16-$15)*1000, $13/($16-$15)*1000}' > rna_rpk.pcsorted.txt
 
 #gene	CFUE	CFUMk	CMP	ERY	GMP	iMK	LSK	MEP	MON	NEU	ER4	G1E
 
 paste rnaHtseqCountsall_replicate_merge.pcsorted.txt gencode.vM4.annotation.pc.sorted.bed | awk -F '\t' -v OFS='\t' '{print $1, $2/($16-$15)*1000,  $4/($16-$15)*1000, $5/($16-$15)*1000, $6/($16-$15)*1000, $7/($16-$15)*1000, $8/($16-$15)*1000, $9/($16-$15)*1000, $10/($16-$15)*1000, $11/($16-$15)*1000, $12/($16-$15)*1000, $13/($16-$15)*1000}' > rna_rpk.pcsorted.txt
+paste rnaHtseqCountsall_replicate_merge.pcsorted.txt gencode.vM4.annotation.pc.sorted.bed | awk -F '\t' -v OFS='\t' '{print $1, $2/($16-$15)*1000,  $3/($16-$15)*1000,  $4/($16-$15)*1000, $5/($16-$15)*1000, $6/($16-$15)*1000, $7/($16-$15)*1000, $8/($16-$15)*1000, $9/($16-$15)*1000, $10/($16-$15)*1000, $11/($16-$15)*1000, $12/($16-$15)*1000, $13/($16-$15)*1000}' > rna_rpk.pcsorted.all12.txt
 
 
 paste CFU_E_ad.raw.bed.tss.txt CMP.raw.bed.tss.txt ERY_ad.raw.bed.tss.txt GMP.raw.bed.tss.txt MK_imm_ad.raw.bed.tss.txt LSK_BM.raw.bed.tss.txt MEP.raw.bed.tss.txt MONO_BM.raw.bed.tss.txt NEU.raw.bed.tss.txt ER4.raw.bed.tss.txt G1E.raw.bed.tss.txt > tss_h3k4me3.pcsorted.raw.txt
