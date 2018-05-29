@@ -212,8 +212,8 @@ points(weighted.mean(ref_cbg_s, density_weight_norm1_s[cbg_id_s_weight]), weight
 dev.off()
 
 ###### get tar norm1 signal
-tar_sig_norm = (tar_sig) * (2^(ref_all-tar_all_pred))
-tar_sig_norm = 2^(tar_all + ref_all - tar_all_pred)
+#tar_sig_norm = (tar_sig) * (2^(ref_all-tar_all_pred))
+tar_sig_norm = 2^(tar_all + ref_all - tar_all_pred) - small_num
 write.table(tar_sig_norm, output, quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
 
 ### get nbp & pk
