@@ -51,8 +51,8 @@ methods = c('raw', 'trnorm', 'manorm', 'loessnorm', 'qtnorm', 'pknorm')
 k = 10
 my.cols = rev(brewer.pal(k, "RdYlBu"))
 
-upper_lim = max(scale(cbind(log2(rna_tpm[,i]+small_num), log2(d_raw[,i]+small_num))))
-lower_lim = min(scale(cbind(log2(rna_tpm[,i]+small_num), log2(d_raw[,i]+small_num))))
+upper_lim = max(scale(cbind(log2(rna_tpm[,]+small_num), log2(d_raw[,]+small_num))))
+lower_lim = min(scale(cbind(log2(rna_tpm[,]+small_num), log2(d_raw[,]+small_num))))
 
 
 for (i in c(1:11)){
@@ -82,7 +82,7 @@ k = 10
 cor_matrix = c()
 cor_matrix_bg=c()
 rna_tpm_max = apply(log2(rna_tpm+small_num), 1, max)
-rna_tpm_max_lim = 1
+rna_tpm_max_lim = 5
 id = c()
 y=0
 for (i in c(1:11)){
@@ -175,6 +175,12 @@ p = p + coord_cartesian(ylim = c(min(cor_matrix_table[,1]), max(cor_matrix_table
 p
 dev.off()
 
+library(mixtools)
+library(mclust)
+mixmdl2 = normalmixEM(log2(rna_tpm)[is.finite(log2(rna_tpm))], k=2)
+png('rna_tpm_hist.png')
+plot(mixmdl2, which=2)
+dev.off()
 
 
 

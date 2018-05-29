@@ -50,12 +50,12 @@ get_2r_nbp = function(sig, output_name){
 }
 
 
-plot_MA_3parts = function(A_all, M_all, A_cpk, M_cpk, A_cbg, M_cbg, A_lim_lower, A_lim_upper){
-	plot(A_all, M_all, pch=16, ylim=c(-M_ylim, M_ylim), xlim=c(A_lim_lower, A_lim_upper), col='dodgerblue', cex=0.6)
-	points(A_cpk, M_cpk, pch=16, col='darkorange1', cex=0.6)
-	points(A_cbg, M_cbg, pch=16, col='gray56', cex=0.6)
-	points(mean(A_cpk), mean(M_cpk), pch=16, col='black', cex=1)
-	points(mean(A_cbg), mean(M_cbg), pch=16, col='black', cex=1)
-	lines(c(mean(A_cbg), mean(A_cpk)), c(mean(M_cbg), mean(M_cpk)), col='green', lty=2, lwd=3)
-	abline(h=0, col='black', lwd=3)
+plot_MA_3parts = function(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, all_lowerlim, all_upperlim){
+	plot(ref_all_s, tar_all_s, pch=16, ylim=c(all_lowerlim, all_upperlim), xlim=c(all_lowerlim, all_upperlim), col='dodgerblue', cex=0.6)
+	points(ref_cpk_s, tar_cpk_s, pch=16, col='darkorange1', cex=0.6)
+	points(ref_cbg_s, tar_cbg_s, pch=16, col='gray56', cex=0.6)
+	points(mean(ref_cpk_s), mean(tar_cpk_s), pch=16, col='black', cex=1)
+	points(mean(ref_cbg_s), mean(tar_cbg_s), pch=16, col='black', cex=1)
+	lines(c(mean(ref_cbg_s), mean(ref_cpk_s)), c(mean(tar_cbg_s), mean(tar_cpk_s)), col='green', lty=2, lwd=3)
+	abline(0,1, col='black', lwd=3)
 }
