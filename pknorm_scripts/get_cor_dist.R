@@ -82,7 +82,7 @@ k = 10
 cor_matrix = c()
 cor_matrix_bg=c()
 rna_tpm_max = apply(log2(rna_tpm+small_num), 1, max)
-rna_tpm_max_lim = 5
+rna_tpm_max_lim = 2
 id = c()
 y=0
 for (i in c(1:11)){
@@ -100,9 +100,12 @@ for (i in c(1:11)){
 			for (m in methods){
 				d_raw = read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)
 				d_raw_bg = read.table(paste('tss_h3k4me3.pcsorted.', m, '.1000kb.txt', sep=''), header=F)
-				rna_tpm_dif = scale(log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
-				chip_dif = scale(log2(d_raw[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
-				chip_dif_bg = scale(log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
+				#rna_tpm_dif = scale(log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
+				#chip_dif = scale(log2(d_raw[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
+				#chip_dif_bg = scale(log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
+				rna_tpm_dif = log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,j]+small_num)
+				chip_dif = log2(d_raw[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw[rna_tpm_max>rna_tpm_max_lim,j]+small_num)
+				chip_dif_bg = log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,j]+small_num)
 				dif_cor_1 = cor(rna_tpm_dif, chip_dif, method='pearson')
 				dif_cor_1_bg = cor(rna_tpm_dif, chip_dif_bg, method='pearson')
 				dif_cor_2 = cor(rna_tpm_dif, chip_dif, method='spearman')

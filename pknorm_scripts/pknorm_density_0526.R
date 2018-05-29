@@ -188,7 +188,7 @@ density_weight_norm1_s = get_density_weight_2d(ref_all_s[cpk_cbg_id_s], tar_all_
 #density_weight_norm1 = density_weight
 
 
-png(paste(output, '.MAplot.norm.png', sep=''), width=800, height=400)
+png(paste(output, '.scatterplot.norm.png', sep=''), width=800, height=400)
 par(mfrow=c(1,2))
 
 ###### plot cluster
@@ -213,7 +213,7 @@ dev.off()
 
 ###### get tar norm1 signal
 tar_sig_norm = (tar_sig) * (2^(ref_all-tar_all_pred))
-
+tar_sig_norm = 2^(tar_all + ref_all - tar_all_pred)
 write.table(tar_sig_norm, output, quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
 
 ### get nbp & pk
