@@ -124,55 +124,16 @@ todiscrete = function(t, tmin, tmax, bins) {
 }
 
 
-getfrommat_2d = function(d, a) {
-	d$z[a[1], a[2]]
-}
-
-getfrommat_1d = function(d, a) {
-	d$y[a[1]]
-}
-
-get_density_weight_2d = function(A_all, M_all, grid){
-	###### discrete original 2D space
-	A_all_discrete = todiscrete(A_all, min(A_all), max(A_all), bins = grid)
-	M_all_discrete = todiscrete(M_all, min(M_all), max(M_all), bins = grid)
-	d = kde2d(A_all, M_all, n = grid)
-	###### get density
-	density = unlist(apply(cbind(A_all_discrete, M_all_discrete), 1, function(x) getfrommat_2d(d,x)))
-	print(summary(density))
-	print(sum(density))
-	density_weight_raw = 1/(density+100)
-	#density_weight_raw[cpk_id] = mean(density_weight_raw[cpk_id])
-	#density_weight_raw = density_weight_raw - min(density_weight_raw)
-	density_weight = density_weight_raw/sum(density_weight_raw)
-	return(density_weight)
-}
-
-get_density_weight_1d = function(A_all, grid){
-	###### discrete original 2D space
-	A_all_discrete = todiscrete(A_all, min(A_all), max(A_all), bins = grid)
-	d = density(A_all, n = grid)
-	###### get density
-	density = unlist(lapply(A_all_discrete, function(x) getfrommat_1d(d,x)))
-	density_weight_raw = 1/(density)
-	#density_weight_raw[cpk_id] = mean(density_weight_raw[cpk_id])
-	#density_weight_raw = density_weight_raw - min(density_weight_raw)
-	density_weight = density_weight_raw/sum(density_weight_raw)
-	return(density_weight)
-}
-
 grid=100
 cpk_cbg_id_s = (cpk_id_s | cbg_id_s)
 
-print('get density weight (raw)')
-density_weight_s = get_density_weight_2d(A_all_s[cpk_cbg_id_s], M_all_s[cpk_cbg_id_s], grid)
-
-
 
 print('fit weighted loess model')
-weighted_loess_model = loess(M_all_s[cpk_cbg_id_s]~A_all_s[cpk_cbg_id_s], weights=density_weight_s, span=1, degree=2)
+loess_model = loess(M_all_s[cpk_cbg_id_s]~A_all_s[cpk_cbg_id_s], span=1, degree=2)
+
+
 print('fit loess model')
-M_all_pred = predict(weighted_loess_model, newdata=A_all)
+M_all_pred = predict(loess_model, newdata=A_all)
 M_all_pred_s = M_all_pred[sample_id]
 M_all_norm1_s = M_all_s - M_all_pred_s
 M_cpk_norm1_s = M_cpk_s - M_all_pred_s[cpk_id_s]
@@ -192,17 +153,17 @@ heatscatter(A_all_s, M_all_s, pch=16, ylim=c(-M_ylim, M_ylim), xlim=c(A_lim_lowe
 abline(h=0, col='black', lwd=2)
 cpk_id_s_weight = cpk_id_s[cpk_cbg_id_s]
 cbg_id_s_weight = cbg_id_s[cpk_cbg_id_s]
-points(weighted_loess_model$x, weighted_loess_model$fitted,col="dodgerblue", pch=16, cex=0.6)
-lines(c(weighted.mean(A_cbg_s, density_weight_s[cbg_id_s_weight]), weighted.mean(A_cpk_s, density_weight_s[cpk_id_s_weight])), c(weighted.mean(M_cbg_s, density_weight_s[cbg_id_s_weight]), weighted.mean(M_cpk_s, density_weight_s[cpk_id_s_weight])), col='green', lty=2, lwd=3)
-points(weighted.mean(A_cpk_s, density_weight_s[cpk_id_s_weight]), weighted.mean(M_cpk_s, density_weight_s[cpk_id_s_weight]), pch=16, col='black', cex=1)
-points(weighted.mean(A_cbg_s, density_weight_s[cbg_id_s_weight]), weighted.mean(M_cbg_s, density_weight_s[cbg_id_s_weight]), pch=16, col='black', cex=1)
+points(loess_model$x, loess_model$fitted,col="dodgerblue", pch=16, cex=0.6)
+lines(c(mean(A_cbg_s), mean(A_cpk_s)), c(mean(M_cbg_s), mean(M_cpk_s)), col='green', lty=2, lwd=3)
+points(mean(A_cpk_s), mean(M_cpk_s), pch=16, col='black', cex=1)
+points(mean(A_cbg_s), mean(M_cbg_s), pch=16, col='black', cex=1)
 
 ###### plot loess adjusted MA-plot
 heatscatter(A_all_s, (M_all_s-M_all_pred_s), pch=16, ylim=c(-M_ylim, M_ylim), xlim=c(A_lim_lower, A_lim_upper), cex=0.6)
 abline(h=0, col='black', lwd=2)
-lines(c(weighted.mean(A_cbg_s, density_weight_norm1_s[cbg_id_s_weight]), weighted.mean(A_cpk_s, density_weight_norm1_s[cpk_id_s_weight])), c(weighted.mean(M_cbg_norm1_s, density_weight_norm1_s[cbg_id_s_weight]), weighted.mean(M_cpk_norm1_s, density_weight_norm1_s[cpk_id_s_weight])), col='green', lty=2, lwd=3)
-points(weighted.mean(A_cpk_s, density_weight_norm1_s[cpk_id_s_weight]), weighted.mean(M_cpk_norm1_s, density_weight_norm1_s[cpk_id_s_weight]), pch=16, col='black', cex=1)
-points(weighted.mean(A_cbg_s, density_weight_norm1_s[cbg_id_s_weight]), weighted.mean(M_cbg_norm1_s, density_weight_norm1_s[cbg_id_s_weight]), pch=16, col='black', cex=1)
+lines(c(mean(A_cbg_s), mean(A_cpk_s)), c(mean(M_cbg_norm1_s), mean(M_cpk_norm1_s)), col='green', lty=2, lwd=3)
+points(mean(A_cpk_s), mean(M_cpk_norm1_s), pch=16, col='black', cex=1)
+points(mean(A_cbg_s), mean(M_cbg_norm1_s), pch=16, col='black', cex=1)
 
 dev.off()
 
