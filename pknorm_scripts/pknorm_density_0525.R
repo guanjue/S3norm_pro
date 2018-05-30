@@ -110,7 +110,7 @@ A_lim_upper = max(A_all_s)
 png(paste(output, '.MAplot.png', sep=''), width=800, height=400)
 par(mfrow=c(1,2))
 ###### plot cluster
-plot_MA_3parts(A_all_s, M_all_s, A_cpk_s, M_cpk_s, A_cbg_s, M_cbg_s, A_lim_lower, A_lim_upper)
+plot_MA_3parts(A_all_s, M_all_s, A_cpk_s, M_cpk_s, A_cbg_s, M_cbg_s, M_ylim, A_lim_lower, A_lim_upper)
 ###### plot density plot
 heatscatter(A_all_s, M_all_s, pch=16, ylim=c(-M_ylim, M_ylim), xlim=c(A_lim_lower, A_lim_upper), cex=0.6)
 abline(h=0, col='black', lwd=2)

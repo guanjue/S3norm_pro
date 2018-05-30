@@ -82,7 +82,7 @@ k = 10
 cor_matrix = c()
 cor_matrix_bg=c()
 rna_tpm_max = apply(log2(rna_tpm+small_num), 1, max)
-rna_tpm_max_lim = 2
+rna_tpm_max_lim = 5
 id = c()
 y=0
 for (i in c(1:11)){
@@ -167,6 +167,7 @@ colnames(cor_matrix_table) = c('cor', 'method', 'fg_bg')
 cor_matrix_table[,1] = apply(cor_matrix_table, 1, function(x) x[1]=as.numeric(x[1]))
 
 png('test1.png', width=1200, height=800)
+par(mfrow=c(1,6))
 p = ggplot(data = cor_matrix_table, aes(x=method, y=cor)) 
 p = p + geom_boxplot(aes(fill = fg_bg))
 p = p + geom_point(aes(y=cor, group=fg_bg), position = position_dodge(width=0.75))
@@ -199,7 +200,7 @@ dev.off()
 
 
 
-
+'''
 
 methods = c('pknorm')
 for (m in methods){
@@ -261,7 +262,7 @@ my.cols <- rev(brewer.pal(k, "RdYlBu"))
 cor_dif_matrix = c()
 cor_dif_matrix_bg = c()
 cor_dif_matrix_shuffle = c()
-tpm_lim=2
+tpm_lim=5
 used_gene_number = c()
 count_id = 0
 cor_method = 'pearson'
@@ -390,3 +391,5 @@ cbind(id,cor_dif_matrix[,2]-apply(cor_dif_matrix, 1, max))[order(cor_dif_matrix[
 
 apply(cor_dif_matrix, 1, max)
 
+
+'''

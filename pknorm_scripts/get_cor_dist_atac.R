@@ -30,10 +30,10 @@ for (m in methods){
 	#shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
 	shuffle_id = sample(dim(rna_tpm)[2],dim(rna_tpm)[2])
 	d_raw = read.table(paste('tss_atac.pcsorted.', m, '.txt', sep=''), header=F)
-	cor_0 = apply(cbind(rna_tpm, d_raw)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
-	cor_0_shuffle = apply(cbind(rna_tpm, d_raw[,shuffle_id])[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
+	cor_0 = apply(cbind(rna_tpm, d_raw)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:12]+small_num),log2(x[13:24]+small_num), method=cor_method))
+	cor_0_shuffle = apply(cbind(rna_tpm, d_raw[,shuffle_id])[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:12]+small_num),log2(x[13:24]+small_num), method=cor_method))
 	d_raw_bg = read.table(paste('tss_atac.pcsorted.', m, '.1000kb.txt', sep=''), header=F)
-	cor_0_bg = apply(cbind(rna_tpm, d_raw_bg)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
+	cor_0_bg = apply(cbind(rna_tpm, d_raw_bg)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:12]+small_num),log2(x[13:24]+small_num), method=cor_method))
 	kl_dist_bg = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_bg[!is.na(cor_0_bg)], bw=bw_used)$y)$D2
 	kl_dist_shuffle = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_shuffle[!is.na(cor_0_shuffle)], bw=bw_used)$y)$D2
 	paired_t = t.test(cor_0, cor_0_shuffle, paired=TRUE, alternative = 'greater')
@@ -51,8 +51,8 @@ methods = c('raw', 'trnorm', 'manorm', 'loessnorm', 'qtnorm', 'pknorm')
 k = 10
 my.cols = rev(brewer.pal(k, "RdYlBu"))
 
-upper_lim = max(scale(cbind(log2(rna_tpm[,i]+small_num), log2(d_raw[,i]+small_num))))
-lower_lim = min(scale(cbind(log2(rna_tpm[,i]+small_num), log2(d_raw[,i]+small_num))))
+upper_lim = max(scale(cbind(log2(rna_tpm+small_num), log2(d_raw+small_num))))
+lower_lim = min(scale(cbind(log2(rna_tpm+small_num), log2(d_raw+small_num))))
 
 for (i in c(1:12)){
 print(paste('sc', toString(i), '.compare.png', sep=''))
@@ -81,7 +81,7 @@ k = 10
 cor_matrix = c()
 cor_matrix_bg=c()
 rna_tpm_max = apply(log2(rna_tpm+small_num), 1, max)
-rna_tpm_max_lim = 1
+rna_tpm_max_lim = 5
 id = c()
 y=0
 for (i in c(1:12)){
@@ -275,9 +275,9 @@ for (m in methods){
 			chip_log2 = log2(d_raw[rna_tpm_pair>=tpm_lim,j]+add_small_num)
 			chip_log1_bg = log2(d_raw_bg[rna_tpm_pair>=tpm_lim,i]+add_small_num)
 			chip_log2_bg = log2(d_raw_bg[rna_tpm_pair>=tpm_lim,j]+add_small_num)
-			rna_dif = scale(rna_log1-rna_log2, center = FALSE)
-			chip_dif = scale(chip_log1-chip_log2, center = FALSE)
-			chip_dif_bg = scale(chip_log1_bg-chip_log2_bg, center = FALSE)
+			rna_dif = (rna_log1-rna_log2)
+			chip_dif = (chip_log1-chip_log2)
+			chip_dif_bg = (chip_log1_bg-chip_log2_bg)
 			cor_dif = cor(rna_dif, chip_dif, method=cor_method)
 			count_id = count_id+1
 			used_gene_number[count_id] = sum(rna_tpm_pair>=tpm_lim)
