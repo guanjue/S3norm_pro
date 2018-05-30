@@ -82,7 +82,7 @@ k = 10
 cor_matrix = c()
 cor_matrix_bg=c()
 rna_tpm_max = apply(log2(rna_tpm+small_num), 1, max)
-rna_tpm_max_lim = 5
+rna_tpm_max_lim = 2
 id = c()
 y=0
 for (i in c(1:11)){

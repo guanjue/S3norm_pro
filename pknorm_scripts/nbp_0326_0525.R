@@ -53,10 +53,10 @@ get_2r_nbp = function(sig, output_name){
 plot_MA_3parts = function(A_all_s, M_all_s, A_cpk_s, M_cpk_s, A_cbg_s, M_cbg_s, M_ylim, A_lowerlim, A_upperlim){
 	plot(A_all_s, M_all_s, pch=16, ylim=c(-M_ylim, M_ylim), xlim=c(A_lowerlim, A_upperlim), col='dodgerblue', cex=0.6)
 	points(A_cpk_s, M_cpk_s, pch=16, col='darkorange1', cex=0.6)
-	points(ref_cbg_s, M_cbg_s, pch=16, col='gray56', cex=0.6)
+	points(A_cbg_s, M_cbg_s, pch=16, col='gray56', cex=0.6)
 	points(mean(A_cpk_s), mean(M_cpk_s), pch=16, col='black', cex=1)
-	points(mean(ref_cbg_s), mean(M_cbg_s), pch=16, col='black', cex=1)
-	lines(c(mean(ref_cbg_s), mean(A_cpk_s)), c(mean(M_cbg_s), mean(M_cpk_s)), col='green', lty=2, lwd=3)
+	points(mean(A_cbg_s), mean(M_cbg_s), pch=16, col='black', cex=1)
+	lines(c(mean(A_cbg_s), mean(A_cpk_s)), c(mean(M_cbg_s), mean(M_cpk_s)), col='green', lty=2, lwd=3)
 	abline(h=0, col='black', lwd=3)
 }
 
