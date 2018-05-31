@@ -13,7 +13,7 @@ rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*10000000))
 rna_tpm_max = apply(rna_tpm, 1, max)
 rna_tpm_min = apply(rna_tpm, 1, min)
 rna_tpm_min = apply(rna_tpm, 1, min)
-tpm_lim=5
+tpm_lim=3
 rna_tpm_non0_num = apply(rna_tpm, 1, function(x) sum(x!=0))
 used_id_rna_tpm = (rna_tpm_max>=tpm_lim) * (rna_tpm_non0_num>=dim(rna_tpm)[2]) >0
 
@@ -81,7 +81,7 @@ k = 10
 cor_matrix = c()
 cor_matrix_bg=c()
 rna_tpm_max = apply(log2(rna_tpm+small_num), 1, max)
-rna_tpm_max_lim = 5
+rna_tpm_max_lim = 3
 id = c()
 y=0
 for (i in c(1:12)){
