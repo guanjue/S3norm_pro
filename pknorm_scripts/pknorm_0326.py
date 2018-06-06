@@ -150,7 +150,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		sig2_p = 10.0**(-sig2)
 		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
 		write2d_array(sig2_z_p_fdr.reshape(sig2_z_p_fdr.shape[0],1), sig2_wg_raw + '.nbp.txt')
-		sig1_binary = (sig2_z_p_fdr < fdr_thresh)
+		sig2_binary = (sig2_z_p_fdr < fdr_thresh)
 
 
 	sig2_pk_num = np.sum(sig2_binary)
