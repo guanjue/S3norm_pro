@@ -12,6 +12,9 @@ all_bins[(dif_pk_bins_num+1):(dif_pk_bins_num*2)]=2
 ### common pk
 all_bins[(dif_pk_bins_num*2+1):pk_bins_num]=3
 
+shape = m^2/v
+rate = m/v
+
 
 
 

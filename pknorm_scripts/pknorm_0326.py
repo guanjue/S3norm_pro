@@ -113,16 +113,15 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)
 		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
-	if p_method == 'gmmnb':
-		call('Rscript ' + script_folder + 'gmmnbp_0326.R ' + sig1_wg_raw + ' ' + sig1_wg_raw + '.nbp.txt', shell=True)
-		sig1_p = read2d_array(sig1_wg_raw + '.nbp.txt', float)
-		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
-		sig1_binary = sig1_z_p_fdr < fdr_thresh
 	elif p_method == 'z':
 		sig1_log2 = np.log2(sig1+0.01)
 		sig1_z_p_fdr = p_adjust(1 - norm.cdf((sig1_log2 - np.mean(sig1_log2))/ np.std(sig1_log2)), 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
-
+	elif p_method == 'p':
+		sig1_p = 10.0**(-sig1)
+		sig1_z_p_fdr = p_adjust(sig1_p, 'fdr')
+		write2d_array(sig1_z_p_fdr.reshape(sig1_z_p_fdr.shape[0],1), sig1_wg_raw + '.nbp.txt')
+		sig1_binary = (sig1_z_p_fdr < fdr_thresh)
 
 	sig1_pk_num = np.sum(sig1_binary)
 	print('sig1_pk_num')
@@ -147,6 +146,11 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		sig2_log2 = np.log2(sig2+0.01)
 		sig2_z_p_fdr = p_adjust(1 - norm.cdf((sig2_log2 - np.mean(sig2_log2))/ np.std(sig2_log2)), 'fdr')
 		sig2_binary = sig2_z_p_fdr < fdr_thresh
+	elif p_method == 'p':
+		sig2_p = 10.0**(-sig2)
+		sig2_z_p_fdr = p_adjust(sig2_p, 'fdr')
+		write2d_array(sig2_z_p_fdr.reshape(sig2_z_p_fdr.shape[0],1), sig2_wg_raw + '.nbp.txt')
+		sig1_binary = (sig2_z_p_fdr < fdr_thresh)
 
 
 	sig2_pk_num = np.sum(sig2_binary)
