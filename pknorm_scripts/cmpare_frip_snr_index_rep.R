@@ -17,7 +17,7 @@ sig2_PKnorm = args[6]
 
 output_name = args[7]
 fdr_thresh = as.numeric(args[8])
-method=args[9]
+
 ################################################
 nbp_2r = function(sig, p_lim_1r, output_name){
 	### get mean & var
@@ -66,18 +66,6 @@ nbp_2r = function(sig, p_lim_1r, output_name){
 }
 
 
-zp = function(sig){
-	### get mean & var
-	thesh = -1
-	sig_non0 = sig[sig>=thesh]
-	sig_mean)/ = mean(sig_non0)
-	sig_sd = sd(sig_non0)
-	z = (sig - sig_mean)/sig_sd
-	zp = pnorm(-z)
-	return(zp)
-}
-
-
 jaccard_index = function(pk_binary_1, pk_binary_2){
 	overlap = (pk_binary_1 * pk_binary_2)==1
 	pk_overlap_num = sum(overlap)
@@ -120,15 +108,7 @@ sig_matrix = as.matrix(cbind(sig1, sig2_r, sig2_tr, sig2_ma, sig2_qt, sig2_pk))
 sig_matrix_colnames = c('sig1', 'sig2_r', 'sig2_tr', 'sig2_ma', 'sig2_qt', 'sig2_pk')
 
 ### get nbp
-if (method == 'nbp'){
-	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(nbp_2r(x, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr'))
-} else if (method == 'p'){
-	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(x, method='fdr'))	
-} else if (method == 'neglog10p'){
-	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(10^(-x), method='fdr'))
-} else if (method == 'zp'){
-	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp(x), method='fdr'))
-}
+sig_matrix_nbp = apply(sig_matrix, 2, function(x) p.adjust(nbp_2r(x, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr'))
 
 frip_all = c()
 snr_all = c()
@@ -138,13 +118,13 @@ ji_all = c()
 
 frip_common_all = c()
 
-sig1_pk_id = sig_matrix_p[,1]<fdr_thresh
+sig1_pk_id = sig_matrix_nbp[,1]<fdr_thresh
 sig1 = sig_matrix[,1]
 
 for ( i in c(1:dim(sig_matrix)[2])){
 	print(sig_matrix_colnames[i])
 	### get info
-	nbp_tmp = sig_matrix_p[,i]
+	nbp_tmp = sig_matrix_nbp[,i]
 	sig_tmp = sig_matrix[,i]
 	pk_id_tmp = nbp_tmp<fdr_thresh
 	bg_id_tmp = nbp_tmp>=fdr_thresh
