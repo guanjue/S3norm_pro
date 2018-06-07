@@ -1,0 +1,154 @@
+library(mclust)
+library(Hmisc)
+
+### get parameters
+args = commandArgs(trailingOnly=TRUE)
+
+sig1_raw = args[1]
+sig2_raw = args[2]
+
+sig2_TRnorm = args[3]
+
+sig2_MAnorm = args[4]
+
+sig2_QTnorm = args[5]
+
+sig2_PKnorm = args[6]
+
+output_name = args[7]
+fdr_thresh = as.numeric(args[8])
+
+################################################
+nbp_2r = function(sig, p_lim_1r, output_name){
+	### get mean & var
+	thesh = -1
+	sig_non0 = sig[sig>=thesh]
+	sig_mean = mean(sig_non0)
+	sig_var = var(sig_non0)
+	### print overdispersion
+	print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))
+	### get negative binomial prob
+	sig_prob = sig_mean / sig_var
+	### set upper & lower lim for the NB-prob
+	if (sig_prob<0.1){
+		print('use lower bound for nbp prob')
+		sig_prob = 0.1
+	}
+	if (sig_prob>=0.9){
+		print('use upper bound for nbp prob')
+		sig_prob = 0.9
+	}
+	### get size
+	sig_size = sig_mean * sig_prob / (1-sig_prob)
+	### get NB-p-value
+	nb_pval = apply(as.matrix(sig_non0), MARGIN=1, function(x) pnbinom(x[1], sig_size, sig_prob, lower.tail=FALSE) )
+	### 2nd round
+	sig_non0_bg = sig_non0[nb_pval>=p_lim_1r]
+	sig_non0_bg_mean = mean(sig_non0_bg)
+	sig_non0_bg_var = var(sig_non0_bg)
+	print(paste('2nd round check signal track overdispersion in background regions, var/mean=', toString(round(sig_var/sig_mean, digits=3)) ))
+	sig_prob_2nd = sig_non0_bg_mean / sig_non0_bg_var
+	if (sig_prob_2nd<0.1){
+		print('use lower bound for nbp prob')
+		sig_prob_2nd = 0.1
+	}
+	if (sig_prob_2nd>=0.9){
+		print('use upper bound for nbp prob')
+		sig_prob_2nd = 0.9
+	}
+	sig_size_2nd = sig_non0_bg_mean * sig_prob_2nd / (1-sig_prob_2nd)
+	nb_pval_2nd = apply(as.matrix(sig), MARGIN=1, function(x) pnbinom(x[1], sig_size_2nd, sig_prob_2nd, lower.tail=FALSE) )
+
+	### write nbp_2r
+	#write.table(nb_pval_2nd, output_name, quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
+	### return 2nd round NB-p-value
+	return(nb_pval_2nd)
+}
+
+
+jaccard_index = function(pk_binary_1, pk_binary_2){
+	overlap = (pk_binary_1 * pk_binary_2)==1
+	pk_overlap_num = sum(overlap)
+	union = (pk_binary_2 + pk_binary_2)!=0
+	pk_union_num = sum(union)
+	jaccard_index = pk_overlap_num / pk_union_num
+	return(jaccard_index)
+}
+
+
+frip_common = function(sig1, pk_binary_1, sig2, pk_binary_2){
+	overlap = (pk_binary_1 * pk_binary_2)==1
+	union = (pk_binary_2 + pk_binary_2)!=0
+	FRiP_JI_all = (sum(sig1[overlap])+sum(sig2[overlap])) / (sum(sig1)+sum(sig2))
+	FRiP_JI_x = sum(sig1[overlap]) / sum(sig1)
+	FRiP_JI_y = sum(sig2[overlap]) / sum(sig2)
+	return(c(FRiP_JI_all, FRiP_JI_x, FRiP_JI_y))
+}
+
+
+#sig1_raw = 'ER4.fisher_p.txt'
+#sig2_raw = 'B_SPL.fisher_p.txt'
+#sig2_TRnorm = 'B_SPL_TM_MAnorm_totalmean_MAnorm/B_SPL_TM_MAnorm.totalsig_norm.txt'
+#sig2_MAnorm = 'B_SPL_TM_MAnorm_totalmean_MAnorm/B_SPL_TM_MAnorm.MAnorm.txt'
+#sig2_QTnorm = 'B_SPL.fisher_p.txt.qtn.txt'
+#sig2_PKnorm = 'B_SPL_txt.pknorm.txt'
+#output_name = 'test'
+#fdr_thresh = 0.05
+
+### read data
+sig1 = scan(sig1_raw)
+
+sig2_r = scan(sig2_raw)
+sig2_tr = scan(sig2_TRnorm)
+sig2_ma = scan(sig2_MAnorm)
+sig2_qt = scan(sig2_QTnorm)
+sig2_pk = scan(sig2_PKnorm)
+
+sig_matrix = as.matrix(cbind(sig1, sig2_r, sig2_tr, sig2_ma, sig2_qt, sig2_pk))
+sig_matrix_colnames = c('sig1', 'sig2_r', 'sig2_tr', 'sig2_ma', 'sig2_qt', 'sig2_pk')
+
+### get nbp
+sig_matrix_nbp = apply(sig_matrix, 2, function(x) p.adjust(nbp_2r(x, 0.001, paste(sig1_raw, '.nbp_2r.txt', sep='')), method='fdr'))
+
+frip_all = c()
+snr_all = c()
+pk_num_all = c()
+ari_all = c()
+ji_all = c()
+
+frip_common_all = c()
+
+sig1_pk_id = sig_matrix_nbp[,1]<fdr_thresh
+sig1 = sig_matrix[,1]
+
+for ( i in c(1:dim(sig_matrix)[2])){
+	print(sig_matrix_colnames[i])
+	### get info
+	nbp_tmp = sig_matrix_nbp[,i]
+	sig_tmp = sig_matrix[,i]
+	pk_id_tmp = nbp_tmp<fdr_thresh
+	bg_id_tmp = nbp_tmp>=fdr_thresh
+	frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
+	snr_tmp = mean(sig_tmp[pk_id_tmp]) / mean(sig_tmp[bg_id_tmp])
+	pk_num_tmp = sum(pk_id_tmp)
+	ari_tmp = adjustedRandIndex(sig1_pk_id, pk_id_tmp)
+	ji_tmp = jaccard_index(sig1_pk_id, pk_id_tmp)
+	frip_common_tmp = frip_common(sig1, sig1_pk_id, sig_tmp, pk_id_tmp)
+	### append(info)
+	frip_all[i] = frip_tmp
+	snr_all[i] = snr_tmp
+	pk_num_all[i] = pk_num_tmp
+	ari_all[i] = ari_tmp
+	ji_all[i] = ji_tmp
+	frip_common_all = cbind(frip_common_all, frip_common_tmp)
+}
+
+
+info_matrix = cbind(frip_all, snr_all, pk_num_all, ari_all, ji_all, t(frip_common_all))
+colnames(info_matrix) = c('frip', 'snr', 'pk_num', 'ari', 'ji', 'frip_cpk', 'frip_cpk_ref', 'frip_cpk_tar')
+rownames(info_matrix) = sig_matrix_colnames
+
+write.table(info_matrix, output_name, quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
+
+
+
