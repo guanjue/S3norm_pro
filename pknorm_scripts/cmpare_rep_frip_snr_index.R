@@ -113,6 +113,10 @@ frip_common = function(sig1, pk_binary_1, sig2, pk_binary_2){
 
 ### read data
 sig1_r = scan(sig1_raw)
+sig1_tr = scan(sig1_TRnorm)
+sig1_ma = scan(sig1_MAnorm)
+sig1_qt = scan(sig1_QTnorm)
+sig1_pk = scan(sig1_PKnorm)
 
 sig2_r = scan(sig2_raw)
 sig2_tr = scan(sig2_TRnorm)
