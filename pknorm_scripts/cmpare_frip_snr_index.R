@@ -70,7 +70,7 @@ zp = function(sig){
 	### get mean & var
 	thesh = -1
 	sig_non0 = sig[sig>=thesh]
-	sig_mean)/ = mean(sig_non0)
+	sig_mean = mean(sig_non0)
 	sig_sd = sd(sig_non0)
 	z = (sig - sig_mean)/sig_sd
 	zp = pnorm(-z)
