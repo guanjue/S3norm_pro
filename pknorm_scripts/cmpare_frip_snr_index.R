@@ -149,7 +149,7 @@ for ( i in c(1:dim(sig_matrix)[2])){
 	pk_id_tmp = nbp_tmp<fdr_thresh
 	bg_id_tmp = nbp_tmp>=fdr_thresh
 	frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
-	snr_tmp = mean(sig_tmp[pk_id_tmp]) / mean(sig_tmp[bg_id_tmp])
+	snr_tmp = median(sig_tmp[pk_id_tmp]) / median(sig_tmp[bg_id_tmp])
 	pk_num_tmp = sum(pk_id_tmp)
 	ari_tmp = adjustedRandIndex(sig1_pk_id, pk_id_tmp)
 	ji_tmp = jaccard_index(sig1_pk_id, pk_id_tmp)
