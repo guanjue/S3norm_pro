@@ -157,8 +157,8 @@ for ( i in c(1:(dim(sig_matrix)[2])/2)){
 	### get info
 	nbp1_tmp = sig_matrix_p[,i]
 	sig1_tmp = sig_matrix[,i]
-	nbp2_tmp = sig_matrix_p[,i+dim(sig_matrix)[2])/2]
-	sig2_tmp = sig_matrix[,i+dim(sig_matrix)[2])/2]
+	nbp2_tmp = sig_matrix_p[,i+dim(sig_matrix)[2]/2]
+	sig2_tmp = sig_matrix[,i+dim(sig_matrix)[2]/2]
 	pk1_id_tmp = nbp1_tmp<fdr_thresh
 	bg1_id_tmp = nbp1_tmp>=fdr_thresh
 	pk2_id_tmp = nbp2_tmp<fdr_thresh
