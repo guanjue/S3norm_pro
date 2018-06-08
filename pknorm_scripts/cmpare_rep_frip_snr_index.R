@@ -103,6 +103,12 @@ frip_common = function(sig1, pk_binary_1, sig2, pk_binary_2){
 
 
 #sig1_raw = 'ER4.fisher_p.txt'
+#sig1_raw = 'ER4.fisher_p.txt'
+#sig1_TRnorm = 'ER4.trnorm.txt'
+#sig1_MAnorm = 'ER4.manorm.txt'
+#sig1_QTnorm = 'ER4.fisher_p.txt.qtn.txt'
+#sig1_PKnorm = 'ER4_txt.pknorm.txt'
+
 #sig2_raw = 'B_SPL.fisher_p.txt'
 #sig2_TRnorm = 'B_SPL_TM_MAnorm_totalmean_MAnorm/B_SPL_TM_MAnorm.totalsig_norm.txt'
 #sig2_MAnorm = 'B_SPL_TM_MAnorm_totalmean_MAnorm/B_SPL_TM_MAnorm.MAnorm.txt'
@@ -110,6 +116,7 @@ frip_common = function(sig1, pk_binary_1, sig2, pk_binary_2){
 #sig2_PKnorm = 'B_SPL_txt.pknorm.txt'
 #output_name = 'test'
 #fdr_thresh = 0.05
+#method = 'neglog10p'
 
 ### read data
 sig1_r = scan(sig1_raw)
@@ -138,6 +145,7 @@ if (method == 'nbp'){
 	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp(x), method='fdr'))
 }
 
+
 frip1_all = c()
 snr1_all = c()
 pk_num1_all = c()
@@ -152,13 +160,13 @@ frip_common_all = c()
 sig1_pk_id = sig_matrix_p[,1]<fdr_thresh
 sig1 = sig_matrix[,1]
 
-for ( i in c(1:(dim(sig_matrix)[2])/2)){
+for ( i in c(1:(dim(sig_matrix)[2]/2))){
 	print(sig_matrix_colnames[i])
 	### get info
 	nbp1_tmp = sig_matrix_p[,i]
 	sig1_tmp = sig_matrix[,i]
-	nbp2_tmp = sig_matrix_p[,i+dim(sig_matrix)[2]/2]
-	sig2_tmp = sig_matrix[,i+dim(sig_matrix)[2]/2]
+	nbp2_tmp = sig_matrix_p[,i+(dim(sig_matrix)[2]/2)]
+	sig2_tmp = sig_matrix[,i+(dim(sig_matrix)[2]/2)]
 	pk1_id_tmp = nbp1_tmp<fdr_thresh
 	bg1_id_tmp = nbp1_tmp>=fdr_thresh
 	pk2_id_tmp = nbp2_tmp<fdr_thresh
@@ -187,7 +195,7 @@ for ( i in c(1:(dim(sig_matrix)[2])/2)){
 
 info_matrix = cbind(frip1_all, snr1_all, pk_num1_all, frip2_all, snr2_all, pk_num2_all, ari_all, ji_all, t(frip_common_all))
 colnames(info_matrix) = c('frip1', 'snr1', 'pk_num1', 'frip2', 'snr2', 'pk_num2', 'ari', 'ji', 'frip_cpk', 'frip_cpk_ref', 'frip_cpk_tar')
-rownames(info_matrix) = sig_matrix_colnames
+rownames(info_matrix) = sig_matrix_colnames[1:(length(sig_matrix_colnames)/2)]
 
 write.table(info_matrix, output_name, quote=FALSE, col.names=TRUE, row.names=TRUE, sep='\t')
 
