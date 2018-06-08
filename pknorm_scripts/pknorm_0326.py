@@ -54,16 +54,16 @@ def p_adjust(pvalue, method):
 ################################################################################################
 ### NewtonRaphsonMethod
 def NewtonRaphsonMethod(sig1_pk,sig1_bg, sig2_pk,sig2_bg, A,B, moment, converge_thresh, numIterations):
-	sig1_pk_median = np.median(sig1_pk**moment)
-	sig1_bg_median = np.median(sig1_bg**moment)
+	sig1_pk_mean = np.mean(sig1_pk**moment)
+	sig1_bg_mean = np.mean(sig1_bg**moment)
 
 	for i in range(0, numIterations):
-		fb = sig1_bg_median * np.median(sig2_pk**(moment*B)) - sig1_pk_median * np.median(sig2_bg**(moment*B))
-		dfb = moment * sig1_bg_median * np.median(np.log(sig2_pk) * sig2_pk**(moment*B)) - moment * sig1_pk_median * np.median(np.log(sig2_bg) * sig2_bg**(moment*B))
+		fb = sig1_bg_mean * np.mean(sig2_pk**(moment*B)) - sig1_pk_mean * np.mean(sig2_bg**(moment*B))
+		dfb = moment * sig1_bg_mean * np.mean(np.log(sig2_pk) * sig2_pk**(moment*B)) - moment * sig1_pk_mean * np.mean(np.log(sig2_bg) * sig2_bg**(moment*B))
 
 		### next step
 		B = B - fb / dfb	
-		A = sig1_bg_median / np.median(sig2_bg**(moment*B))
+		A = sig1_bg_mean / np.mean(sig2_bg**(moment*B))
 
 		print("Iteration %d | dFB: %f" % (i, dfb))
 		print([A,B])
@@ -86,14 +86,14 @@ def NewtonRaphsonMethod(sig1_pk,sig1_bg, sig2_pk,sig2_bg, A,B, moment, converge_
 ################################################################################################
 ### Negative binomial p-value
 def nb_cpf(signal_vec):
-	sig_median = np.median(signal_vec)
+	sig_mean = np.mean(signal_vec)
 	sig_var = np.var(signal_vec)
-	sig_prob = sig_median / sig_var
+	sig_prob = sig_mean / sig_var
 	if sig_prob < 0.1:
 		sig_prob = 0.1
 	elif sig_prob > 0.9:
 		sig_prob = 0.9
-	sig_size = sig_median * sig_prob / (1-sig_prob)
+	sig_size = sig_mean * sig_prob / (1-sig_prob)
 	nbp = 1-nbinom.cdf(signal_vec, sig_size, sig_prob)
 	return nbp
 
@@ -115,7 +115,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
 	elif p_method == 'z':
 		sig1_log2 = np.log2(sig1+0.01)
-		sig1_z_p_fdr = p_adjust(1 - norm.cdf((sig1_log2 - np.median(sig1_log2))/ np.std(sig1_log2)), 'fdr')
+		sig1_z_p_fdr = p_adjust(1 - norm.cdf((sig1_log2 - np.mean(sig1_log2))/ np.std(sig1_log2)), 'fdr')
 		sig1_binary = sig1_z_p_fdr < fdr_thresh
 	elif p_method == 'p':
 		sig1_p = 10.0**(-sig1)
@@ -144,7 +144,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 		sig2_binary = sig2_z_p_fdr < fdr_thresh
 	elif p_method == 'z':
 		sig2_log2 = np.log2(sig2+0.01)
-		sig2_z_p_fdr = p_adjust(1 - norm.cdf((sig2_log2 - np.median(sig2_log2))/ np.std(sig2_log2)), 'fdr')
+		sig2_z_p_fdr = p_adjust(1 - norm.cdf((sig2_log2 - np.mean(sig2_log2))/ np.std(sig2_log2)), 'fdr')
 		sig2_binary = sig2_z_p_fdr < fdr_thresh
 	elif p_method == 'p':
 		sig2_p = 10.0**(-sig2)
@@ -182,12 +182,12 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	sig2_cpk = sig2[peak_binary,0]
 
 	### get data driven added small number
-	sig1_cbg_median = np.median(sig1_cbg)
-	sig2_cbg_median = np.median(sig2_cbg)
-	sig1_cpk_median = np.median(sig1_cpk)
-	sig2_cpk_median = np.median(sig2_cpk)
+	sig1_cbg_mean = np.mean(sig1_cbg)
+	sig2_cbg_mean = np.mean(sig2_cbg)
+	sig1_cpk_mean = np.mean(sig1_cpk)
+	sig2_cpk_mean = np.mean(sig2_cpk)
 
-	small_num = (sig1_cpk_median*sig2_cbg_median - sig1_cbg_median*sig2_cpk_median) / ((sig1_cbg_median-sig1_cpk_median)-(sig2_cbg_median-sig2_cpk_median))
+	small_num = (sig1_cpk_mean*sig2_cbg_mean - sig1_cbg_mean*sig2_cpk_mean) / ((sig1_cbg_mean-sig1_cpk_mean)-(sig2_cbg_mean-sig2_cpk_mean))
 	if small_num >1:
 		small_num = 1.0
 	elif small_num <0.01:
@@ -212,25 +212,25 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	sig1[sig1>upperlim] = upperlim
 	sig1[sig1<lowerlim] = lowerlim
 	### total reads sf (for compare)
-	sig1_totalmedian = np.median(sig1)
-	sig2_totalmedian = np.median(sig2)
-	total_median_sf = sig1_totalmedian / sig2_totalmedian
+	sig1_totalmean = np.mean(sig1)
+	sig2_totalmean = np.mean(sig2)
+	total_mean_sf = sig1_totalmean / sig2_totalmean
 
 	### convert to float np.array
 	sig2_norm = np.array(sig2_norm, float)
-	sig2_norm_totalmedian = np.median(sig2_norm)
+	sig2_norm_totalmean = np.mean(sig2_norm)
 	### reshape for writing oputput
 	sig2_norm = np.reshape(sig2_norm, (sig2_norm.shape[0],1))
 
-	### rotated medians for sig2 for plotting
-	sig1_1log_pk_m_od = np.log2(np.median(sig1[peak_binary,0])+small_num)
-	sig2_1log_pk_m_od = np.log2(np.median(sig2[peak_binary,0])+small_num)
+	### rotated means for sig2 for plotting
+	sig1_1log_pk_m_od = np.log2(np.mean(sig1[peak_binary,0])+small_num)
+	sig2_1log_pk_m_od = np.log2(np.mean(sig2[peak_binary,0])+small_num)
 
-	sig1_1log_bg_m_od = np.log2(np.median(sig1[bg_binary,0])+small_num)
-	sig2_1log_bg_m_od = np.log2(np.median(sig2[bg_binary,0])+small_num)
+	sig1_1log_bg_m_od = np.log2(np.mean(sig1[bg_binary,0])+small_num)
+	sig2_1log_bg_m_od = np.log2(np.mean(sig2[bg_binary,0])+small_num)
 
-	sig2_1log_pk_m_pkn = np.log2(np.median(sig2_norm[peak_binary,0])+small_num)
-	sig2_1log_bg_m_pkn = np.log2(np.median(sig2_norm[bg_binary,0])+small_num)
+	sig2_1log_pk_m_pkn = np.log2(np.mean(sig2_norm[peak_binary,0])+small_num)
+	sig2_1log_bg_m_pkn = np.log2(np.mean(sig2_norm[bg_binary,0])+small_num)
 
 	###FRiP score
 	sig2_norm_FRiP = np.sum(sig2_norm[(sig2_binary[:,0]!=0),0]) / np.sum(sig2_norm)
@@ -241,7 +241,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	write2d_array(sig2_norm, sig2_output_name + '.pknorm.txt')
 
 	### write output: sf & FRiP
-	info = np.array([[total_median_sf, B, A], [sig1_FRiP, sig2_norm_FRiP, sig2_FRiP]])
+	info = np.array([[total_mean_sf, B, A], [sig1_FRiP, sig2_norm_FRiP, sig2_FRiP]])
 	write2d_array(info, sig2_output_name + '.info.txt')
 
 
@@ -263,7 +263,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	plt.scatter(plot_x[peak_binary_sample], plot_y[peak_binary_sample], marker='.', color='coral')
 	plt.scatter(sig2_1log_pk_m_pkn, sig1_1log_pk_m_od, marker='.', color='k')
 	plt.scatter(sig2_1log_bg_m_pkn, sig1_1log_bg_m_od, marker='.', color='k')
-	plt.scatter(np.log2(sig2_norm_totalmedian), np.log2(sig1_totalmedian), marker='.', color='red')
+	plt.scatter(np.log2(sig2_norm_totalmean), np.log2(sig1_totalmean), marker='.', color='red')
 	plt.plot([lims_min, lims_max], [lims_min, lims_max], 'k', color = 'k')
 	plt.plot([sig2_1log_bg_m_pkn, sig2_1log_pk_m_pkn], [sig1_1log_bg_m_od, sig1_1log_pk_m_od])
 	plt.xlabel(sig2_output_name + '.pknorm')
@@ -285,7 +285,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	plt.scatter(plot_xn[peak_binary_sample], plot_yn[peak_binary_sample], marker='.', color='coral')
 	plt.scatter(sig2_1log_pk_m_od, sig1_1log_pk_m_od, marker='.', color='k')
 	plt.scatter(sig2_1log_bg_m_od, sig1_1log_bg_m_od, marker='.', color='k')
-	plt.scatter(np.log2(sig2_totalmedian), np.log2(sig1_totalmedian), marker='.', color='red')
+	plt.scatter(np.log2(sig2_totalmean), np.log2(sig1_totalmean), marker='.', color='red')
 	plt.plot([lims_min, lims_max], [lims_min, lims_max], 'k', color = 'k')
 	plt.plot([sig2_1log_bg_m_od, sig2_1log_pk_m_od], [sig1_1log_bg_m_od, sig1_1log_pk_m_od])
 	plt.xlabel(sig2_output_name + '.pknorm')
