@@ -159,6 +159,8 @@ frip_common_all = c()
 
 sig1_pk_id = sig_matrix_p[,1]<fdr_thresh
 sig1 = sig_matrix[,1]
+sig1_pk_all = c()
+sig2_pk_all = c()
 
 for ( i in c(1:(dim(sig_matrix)[2]/2))){
 	print(sig_matrix_colnames[i])
@@ -168,8 +170,10 @@ for ( i in c(1:(dim(sig_matrix)[2]/2))){
 	nbp2_tmp = sig_matrix_p[,i+(dim(sig_matrix)[2]/2)]
 	sig2_tmp = sig_matrix[,i+(dim(sig_matrix)[2]/2)]
 	pk1_id_tmp = nbp1_tmp<fdr_thresh
+	sig1_pk_all = cbind(sig1_pk_all, pk1_id_tmp)
 	bg1_id_tmp = nbp1_tmp>=fdr_thresh
 	pk2_id_tmp = nbp2_tmp<fdr_thresh
+	sig2_pk_all = cbind(sig2_pk_all, pk2_id_tmp)
 	bg2_id_tmp = nbp2_tmp>=fdr_thresh
 	frip1_tmp = sum(sig1_tmp[pk1_id_tmp]) / sum(sig1_tmp)
 	snr1_tmp = median(sig1_tmp[pk1_id_tmp]) / median(sig1_tmp[bg1_id_tmp])
@@ -192,6 +196,9 @@ for ( i in c(1:(dim(sig_matrix)[2]/2))){
 	frip_common_all = cbind(frip_common_all, frip_common_tmp)
 }
 
+all_pk_id = cbind(sig1_pk_all, sig2_pk_all)
+colnames(all_pk_id) = sig_matrix_colnames
+write.table(all_pk_id, paste(output_name, '.pkid.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=FALSE, sep='\t')
 
 info_matrix = cbind(frip1_all, snr1_all, pk_num1_all, frip2_all, snr2_all, pk_num2_all, ari_all, ji_all, t(frip_common_all))
 colnames(info_matrix) = c('frip1', 'snr1', 'pk_num1', 'frip2', 'snr2', 'pk_num2', 'ari', 'ji', 'frip_cpk', 'frip_cpk_ref', 'frip_cpk_tar')

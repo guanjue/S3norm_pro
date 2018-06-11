@@ -73,6 +73,35 @@ for (i in c(1:length(info_type))){
 		plot(p)
 		dev.off()		
 	}
+	if (i ==10){
+		info_matrix = c()
+		for (j in c(1:length(files_list))){
+			info1_tmp = read.table(files_list[j], header=TRUE, sep='\t')[i]
+			info2_tmp = read.table(files_list[j], header=TRUE, sep='\t')[i+1]
+			ct = unlist(strsplit(files_list[j], split='[.]'))[1]
+			for (k in c(1:length(info_methods))){
+				info_matrix = rbind(info_matrix, c(info_methods[k], abs(info1_tmp[k,]-info2_tmp[k,])))
+			}	
+		}
+		ref_info = info_tmp[1,]
+		info_matrix = as.data.frame(info_matrix)
+		colnames(info_matrix) = c('method', 'sig')
+		info_matrix$method <- factor(info_matrix$method, levels = info_matrix$method)
+		info_matrix[,2] = apply(info_matrix, 1, function(x) as.numeric(x[2]))
+		if (info_type[i] == 'frip_cpk_ref'){
+			info_matrix[,2] = log2(info_matrix[,2])
+			ref_info = log2(ref_info)
+		} 
+		print(paste(info_type[i], '.dif.box.pdf', sep=''))
+		pdf(paste(info_type[i], '.dif.box.pdf', sep=''))
+		p = ggplot(data = info_matrix, aes(x=method, y=sig)) 
+		p = p + geom_boxplot(aes(fill = method))
+		p = p + geom_point(aes(y=sig, group=method), position = position_dodge(width=0.75))
+		#p = p + stat_compare_means(aes(group = method), label = "p.format", paired = TRUE, method = "t.test")
+		#p = p + geom_hline(yintercept = ref_info, lty=2, col='blue')
+		plot(p)
+		dev.off()		
+	}
 }
 
 
