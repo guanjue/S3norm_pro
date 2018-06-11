@@ -149,7 +149,7 @@ if (method == 'nbp'){
 } else if (method == 'zp'){
 	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp(x), method='fdr'))
 } else if (method == 'zp_2r'){
-	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp_2r(x), method='fdr'))
+	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp_2r(x, 0.001), method='fdr'))
 }
 
 
