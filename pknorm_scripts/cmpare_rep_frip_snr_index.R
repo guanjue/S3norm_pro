@@ -199,8 +199,10 @@ for ( i in c(1:(dim(sig_matrix)[2]/2))){
 }
 
 bed_file = as.data.frame(read.table(bed_file, header=F, sep='\t'))
-all_pk_id = as.data.frame(cbind(sig1_pk_all, sig2_pk_all, sig_matrix)*1.0)
-all_pk_bed = cbind(bed_file, all_pk_id)
+all_pk_id = as.data.frame(cbind(sig1_pk_all, sig2_pk_all)*1)
+colnames(all_pk_id) = sig_matrix_colnames
+all_pk_id_sig = as.data.frame(cbind(all_pk_id, sig_matrix))
+all_pk_bed = cbind(bed_file, all_pk_id_sig)
 write.table(all_pk_bed, paste(output_name, '.pkid.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=FALSE, sep='\t')
 
 info_matrix = cbind(frip1_all, snr1_all, pk_num1_all, frip2_all, snr2_all, pk_num2_all, ari_all, ji_all, t(frip_common_all))
