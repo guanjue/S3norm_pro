@@ -196,7 +196,7 @@ for ( i in c(1:(dim(sig_matrix)[2]/2))){
 	frip_common_all = cbind(frip_common_all, frip_common_tmp)
 }
 
-all_pk_id = cbind(sig1_pk_all, sig2_pk_all)
+all_pk_id = cbind(sig1_pk_all, sig2_pk_all)*1
 colnames(all_pk_id) = sig_matrix_colnames
 write.table(all_pk_id, paste(output_name, '.pkid.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=FALSE, sep='\t')
 
