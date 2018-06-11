@@ -22,6 +22,8 @@ sig2_PKnorm = args[10]
 output_name = args[11]
 fdr_thresh = as.numeric(args[12])
 method=args[13]
+
+bed_file=args[14]
 ################################################
 nbp_2r = function(sig, p_lim_1r, output_name){
 	### get mean & var
@@ -196,9 +198,10 @@ for ( i in c(1:(dim(sig_matrix)[2]/2))){
 	frip_common_all = cbind(frip_common_all, frip_common_tmp)
 }
 
-all_pk_id = cbind(sig1_pk_all, sig2_pk_all)*1
-colnames(all_pk_id) = sig_matrix_colnames
-write.table(all_pk_id, paste(output_name, '.pkid.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=FALSE, sep='\t')
+bed_file = as.data.frame(read.table(bed_file, header=F, sep='\t'))
+all_pk_id = as.data.frame(cbind(sig1_pk_all, sig2_pk_all, sig_matrix)*1.0)
+all_pk_bed = cbind(bed_file, all_pk_id)
+write.table(all_pk_bed, paste(output_name, '.pkid.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=FALSE, sep='\t')
 
 info_matrix = cbind(frip1_all, snr1_all, pk_num1_all, frip2_all, snr2_all, pk_num2_all, ari_all, ji_all, t(frip_common_all))
 colnames(info_matrix) = c('frip1', 'snr1', 'pk_num1', 'frip2', 'snr2', 'pk_num2', 'ari', 'ji', 'frip_cpk', 'frip_cpk_ref', 'frip_cpk_tar')
