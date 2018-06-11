@@ -81,6 +81,23 @@ zp = function(sig){
 }
 
 
+zp_2r = function(sig, p_thresh){
+	### get mean & var
+	thesh = -1
+	sig_non0 = sig[sig>=thesh]
+	sig_mean = mean(sig_non0)
+	sig_sd = sd(sig_non0)
+	z = (sig - sig_mean)/sig_sd
+	zp = pnorm(-z)
+	sig_2r = sig_non0[zp>=p_thresh]
+	sig_mean = mean(sig_2r)
+	sig_sd = sd(sig_2r)
+	z = (sig - sig_mean)/sig_sd
+	zp = pnorm(-z)	
+	return(zp)
+}
+
+
 jaccard_index = function(pk_binary_1, pk_binary_2){
 	overlap = (pk_binary_1 * pk_binary_2)==1
 	pk_overlap_num = sum(overlap)
@@ -131,7 +148,11 @@ if (method == 'nbp'){
 	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(10^(-x), method='fdr'))
 } else if (method == 'zp'){
 	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp(x), method='fdr'))
+} else if (method == 'zp_2r'){
+	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp_2r(x), method='fdr'))
 }
+
+
 
 frip_all = c()
 snr_all = c()
