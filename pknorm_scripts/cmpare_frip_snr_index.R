@@ -18,6 +18,9 @@ sig2_PKnorm = args[6]
 output_name = args[7]
 fdr_thresh = as.numeric(args[8])
 method=args[9]
+
+bed_file=args[10]
+
 ################################################
 nbp_2r = function(sig, p_lim_1r, output_name){
 	### get mean & var
@@ -140,6 +143,7 @@ frip_common_all = c()
 
 sig1_pk_id = sig_matrix_p[,1]<fdr_thresh
 sig1 = sig_matrix[,1]
+sig1_pk_all = c()
 
 for ( i in c(1:dim(sig_matrix)[2])){
 	print(sig_matrix_colnames[i])
@@ -147,6 +151,7 @@ for ( i in c(1:dim(sig_matrix)[2])){
 	nbp_tmp = sig_matrix_p[,i]
 	sig_tmp = sig_matrix[,i]
 	pk_id_tmp = nbp_tmp<fdr_thresh
+	sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
 	bg_id_tmp = nbp_tmp>=fdr_thresh
 	frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
 	snr_tmp = median(sig_tmp[pk_id_tmp]) / median(sig_tmp[bg_id_tmp])
@@ -162,6 +167,14 @@ for ( i in c(1:dim(sig_matrix)[2])){
 	ji_all[i] = ji_tmp
 	frip_common_all = cbind(frip_common_all, frip_common_tmp)
 }
+
+
+bed_file = as.data.frame(read.table(bed_file, header=F, sep='\t'))
+all_pk_id = as.data.frame(sig1_pk_all*1)
+colnames(all_pk_id) = sig_matrix_colnames
+all_pk_id_sig = as.data.frame(cbind(all_pk_id, sig_matrix))
+all_pk_bed = cbind(bed_file, all_pk_id_sig)
+write.table(all_pk_bed, paste(output_name, '.pkid.txt', sep=''), quote=FALSE, col.names=TRUE, row.names=FALSE, sep='\t')
 
 
 info_matrix = cbind(frip_all, snr_all, pk_num_all, ari_all, ji_all, t(frip_common_all))
