@@ -215,7 +215,7 @@ for ( i in c(1:dim(sig_matrix)[2])){
 	tar_cpk_s = tar_all_s[cpk_s]
 	ref_cbg_s = ref_all_s[cbg_s]
 	tar_cbg_s = tar_all_s[cbg_s]
-	png(paste(sig_matrix_colnames[i], '.scatter.png', sep=''))
+	png(paste(output_name, sig_matrix_colnames[i], '.scatter.png', sep=''))
 	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, -2, 2.7)
 	dev.off()
 }
