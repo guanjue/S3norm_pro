@@ -118,6 +118,16 @@ frip_common = function(sig1, pk_binary_1, sig2, pk_binary_2){
 }
 
 
+plot_scatterplot_3parts = function(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, all_lowerlim, all_upperlim){
+	plot(ref_all_s, tar_all_s, pch=16, ylim=c(all_lowerlim, all_upperlim), xlim=c(all_lowerlim, all_upperlim), col='dodgerblue', cex=0.6)
+	points(ref_cpk_s, tar_cpk_s, pch=16, col='darkorange1', cex=0.6)
+	points(ref_cbg_s, tar_cbg_s, pch=16, col='gray56', cex=0.6)
+	points(mean(ref_cpk_s), mean(tar_cpk_s), pch=16, col='black', cex=1)
+	points(mean(ref_cbg_s), mean(tar_cbg_s), pch=16, col='black', cex=1)
+	lines(c(mean(ref_cbg_s), mean(ref_cpk_s)), c(mean(tar_cbg_s), mean(tar_cpk_s)), col='green', lty=2, lwd=3)
+	abline(0,1, col='black', lwd=3)
+}
+
 #sig1_raw = 'ER4.fisher_p.txt'
 #sig2_raw = 'B_SPL.fisher_p.txt'
 #sig2_TRnorm = 'B_SPL_TM_MAnorm_totalmean_MAnorm/B_SPL_TM_MAnorm.totalsig_norm.txt'
@@ -165,6 +175,11 @@ frip_common_all = c()
 sig1_pk_id = sig_matrix_p[,1]<fdr_thresh
 sig1 = sig_matrix[,1]
 sig1_pk_all = c()
+sig1_mean_pk = mean(sig1[sig1_pk_id])
+sig1_mean_bg = mean(sig1[!sig1_pk_id])
+
+set.seed(2018)
+sample_id = sample(dim(sig_matrix)[1], 100000)
 
 for ( i in c(1:dim(sig_matrix)[2])){
 	print(sig_matrix_colnames[i])
@@ -175,7 +190,9 @@ for ( i in c(1:dim(sig_matrix)[2])){
 	sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
 	bg_id_tmp = nbp_tmp>=fdr_thresh
 	frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
-	snr_tmp = median(sig_tmp[pk_id_tmp]) / median(sig_tmp[bg_id_tmp])
+	mean_pk = mean(sig_tmp[pk_id_tmp])
+	mean_bg = mean(sig_tmp[bg_id_tmp])
+	snr_tmp = mean_pk / mean_bg
 	pk_num_tmp = sum(pk_id_tmp)
 	ari_tmp = adjustedRandIndex(sig1_pk_id, pk_id_tmp)
 	ji_tmp = jaccard_index(sig1_pk_id, pk_id_tmp)
@@ -187,6 +204,20 @@ for ( i in c(1:dim(sig_matrix)[2])){
 	ari_all[i] = ari_tmp
 	ji_all[i] = ji_tmp
 	frip_common_all = cbind(frip_common_all, frip_common_tmp)
+	### plotting
+	cpk = (sig1_pk_id * pk_id_tmp) == 1
+	cbg = (sig1_pk_id + pk_id_tmp) == 0
+	ref_all_s = log10(sig1[sample_id]+0.01)
+	tar_all_s = log10(sig_tmp[sample_id]+0.01)
+	cpk_s = cpk[sample_id]
+	cbg_s = cbg[sample_id]
+	ref_cpk_s = ref_all_s[cpk_s]
+	tar_cpk_s = tar_all_s[cpk_s]
+	ref_cbg_s = ref_all_s[cbg_s]
+	tar_cbg_s = tar_all_s[cbg_s]
+	png(paste(sig_matrix_colnames[i], '.scatter.png', sep=''))
+	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, -2, 2.7)
+	dev.off()
 }
 
 
