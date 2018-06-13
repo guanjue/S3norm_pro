@@ -124,6 +124,7 @@ plot_scatterplot_3parts = function(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, r
 	points(ref_cbg_s, tar_cbg_s, pch=16, col='gray56', cex=0.6)
 	points(mean(ref_cpk_s), mean(tar_cpk_s), pch=16, col='black', cex=1)
 	points(mean(ref_cbg_s), mean(tar_cbg_s), pch=16, col='black', cex=1)
+	points(mean(ref_all_s), mean(tar_all_s), pch=16, col='red', cex=1.2)
 	lines(c(mean(ref_cbg_s), mean(ref_cpk_s)), c(mean(tar_cbg_s), mean(tar_cpk_s)), col='green', lty=2, lwd=3)
 	abline(0,1, col='black', lwd=3)
 }
