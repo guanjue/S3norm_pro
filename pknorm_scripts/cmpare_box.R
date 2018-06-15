@@ -17,8 +17,14 @@ for (i in c(1:length(info_type))){
 	for (j in c(1:length(files_list))){
 		info_tmp = read.table(files_list[j], header=TRUE, sep='\t')[i]
 		ct = unlist(strsplit(files_list[j], split='[.]'))[1]
+		if (info_type[i]!='snr'){ref_sig = info_tmp[1,]}
+		if (info_type[i]=='snr'){ref_sig = log2(info_tmp[1,])}
 		for (k in c(2:length(info_methods))){
-			info_matrix = rbind(info_matrix, c(info_methods[k], info_tmp[k,]))
+			if (info_type[i]!='snr'){
+				info_matrix = rbind(info_matrix, c(info_methods[k], info_tmp[k,]))
+			} else{
+				info_matrix = rbind(info_matrix, c(info_methods[k], log2(info_tmp[k,])))
+			}
 		}	
 	}
 	info_matrix = as.data.frame(info_matrix)
@@ -28,7 +34,8 @@ for (i in c(1:length(info_type))){
 	p = ggplot(data = info_matrix, aes(x=method, y=sig)) 
 	p = p + geom_boxplot(aes(fill = method))
 	p = p + geom_point(aes(y=sig, group=method), position = position_dodge(width=0.75))
-	p = p + stat_compare_means(aes(group = method), label = "p.format", paired = TRUE, method = "t.test")
+	p = p + geom_hline(yintercept = ref_sig)
+	#p = p + stat_compare_means(aes(group = method), label = "p.format", paired = TRUE, method = "t.test")
 	plot(p)
 	dev.off()
 }

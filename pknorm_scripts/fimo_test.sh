@@ -50,27 +50,29 @@ do
 	bedtools merge -i 'T_CD8_SPL.fisher_p.txt.all5info.txt.'${mt_list[i]}'.bedgraph' > 'T_CD8_SPL.fisher_p.txt.all5info.txt.'${mt_list[i]}'.merge.bedgraph'
 	wc -l 'T_CD8_SPL.fisher_p.txt.all5info.txt.'${mt_list[i]}'.merge.bedgraph'
 	### get peak bigwig
-	~/group/software/ucsc/bedGraphToBigWig 'T_CD8_SPL.fisher_p.txt.all5info.txt.'${mt_list[i]}'.merge.bedgraph' /storage/home/gzx103/group/projects/vision/input_norm/mm10.chrom.sizes 'T_CD8_SPL.fisher_p.txt.all5info.txt.'${mt_list[i]}'.bw'
+	#~/group/software/ucsc/bedGraphToBigWig 'T_CD8_SPL.fisher_p.txt.all5info.txt.'${mt_list[i]}'.merge.bedgraph' /storage/home/gzx103/group/projects/vision/input_norm/mm10.chrom.sizes 'T_CD8_SPL.fisher_p.txt.all5info.txt.'${mt_list[i]}'.bw'
 done
 
-bedtools map -a T_CD8_SPL.qt_nopk.merge.NOfimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.qtnorm_pkid.bedgraph -c 4 -o mean > T_CD8_SPL.qt_nopk.merge.NOfimomotif.qtmeansig.bed
-bedtools map -a T_CD8_SPL.qt_nopk.merge.NOfimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.bedgraph -c 4 -o mean > T_CD8_SPL.qt_nopk.merge.NOfimomotif.pkmeansig.bed
+time bedtools map -a T_CD8_SPL.qt_nopk.merge.NOfimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.qtnorm_pkid.all.bedgraph -c 4 -o mean > T_CD8_SPL.qt_nopk.merge.NOfimomotif.qtmeansig.bed
+time bedtools map -a T_CD8_SPL.qt_nopk.merge.NOfimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.all.bedgraph -c 4 -o mean > T_CD8_SPL.qt_nopk.merge.NOfimomotif.pkmeansig.bed
 
-paste T_CD8_SPL.qt_nopk.merge.NOfimomotif.qtmeansig.bed T_CD8_SPL.qt_nopk.merge.NOfimomotif.pkmeansig.bed | awk -F '\t' -v OFS='\t' '{print $1,$2,$3,($4+10.0)/($8+10.0)}' | sort -k4,4n > T_CD8_SPL.qt_nopk.merge.NOfimomotif.qtpkmeansig.bed
+paste T_CD8_SPL.qt_nopk.merge.NOfimomotif.qtmeansig.bed T_CD8_SPL.qt_nopk.merge.NOfimomotif.pkmeansig.bed | awk -F '\t' -v OFS='\t' '{print $1,$2,$3,($4+10.0)/($8+10.0)}' | sort -k4,4nr | awk -F '\t' -v OFS='\t' '{print $1":"$2"-"$3,$4}' > T_CD8_SPL.qt_nopk.merge.NOfimomotif.qtpkmeansig.bed
 
-cat T_CD8_SPL.fisher_p.txt.all5info.txt.raw_pkid.merge.bedgraph | awk '{print $1,$2,$3,1}' > T_CD8_SPL.fisher_p.txt.all5info.txt.raw_pkid.merge.1.bedgraph
-~/group/software/ucsc/bedGraphToBigWig T_CD8_SPL.fisher_p.txt.all5info.txt.raw_pkid.merge.1.bedgraph /storage/home/gzx103/group/projects/vision/input_norm/mm10.chrom.sizes T_CD8_SPL.raw_pkid.sort.bw
+time bedtools map -a T_CD8_SPL.pk_noma.merge.fimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.manorm_pkid.all.bedgraph -c 4 -o mean > T_CD8_SPL.pk_noma.merge.fimomotif.mameansig.bed
+time bedtools map -a T_CD8_SPL.pk_noma.merge.fimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.all.bedgraph -c 4 -o mean > T_CD8_SPL.pk_noma.merge.fimomotif.pkmeansig.bed
+
+paste T_CD8_SPL.pk_noma.merge.fimomotif.pkmeansig.bed T_CD8_SPL.pk_noma.merge.fimomotif.mameansig.bed | awk -F '\t' -v OFS='\t' '{print $1,$2,$3,($4+10.0)/($8+10.0)}' | sort -k4,4nr | awk -F '\t' -v OFS='\t' '{print $1":"$2"-"$3,$4}' > T_CD8_SPL.pk_noma.merge.fimomotif.pkmameansig.bed
 
 
-bedtools map -a T_CD8_SPL.pk_noma.merge.fimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.manorm_pkid.bedgraph -c 4 -o mean > T_CD8_SPL.pk_noma.merge.fimomotif.mameansig.bed
-bedtools map -a T_CD8_SPL.pk_noma.merge.fimomotif.bed -b T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.bedgraph -c 4 -o mean > T_CD8_SPL.pk_noma.merge.fimomotif.pkmeansig.bed
 
-paste T_CD8_SPL.pk_noma.merge.fimomotif.pkmeansig.bed T_CD8_SPL.pk_noma.merge.fimomotif.mameansig.bed | awk -F '\t' -v OFS='\t' '{print $1,$2,$3,($4+10.0)/($8+10.0)}' | sort -k4,4n | awk -F '\t' -v OFS='\t' '{print $1":"$2"-"$3,$4}' > T_CD8_SPL.pk_noma.merge.fimomotif.pkmameansig.bed
 
 
 time computeMatrix scale-regions -S T_CD8_SPL.manorm.sort.bw T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_all.sig.bw -R T_CD8_SPL.pk_noma.merge.fimomotif.bed -a 0 -b 0 --binSize 200 -out T_CD8_SPL.pk_noma.merge.fimomotif.pkmameansig.mat.gz
 
 
+cat T_CD8_SPL.fisher_p.txt.all5info.txt.raw_pkid.merge.bedgraph | awk '{print $1,$2,$3,1}' > T_CD8_SPL.fisher_p.txt.all5info.txt.raw_pkid.merge.1.bedgraph
+
+~/group/software/ucsc/bedGraphToBigWig T_CD8_SPL.fisher_p.txt.all5info.txt.raw_pkid.merge.1.bedgraph /storage/home/gzx103/group/projects/vision/input_norm/mm10.chrom.sizes T_CD8_SPL.raw_pkid.sort.bw
 
 ~/group/software/ucsc/bedGraphToBigWig T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.merge.bedgraph /storage/home/gzx103/group/projects/vision/input_norm/mm10.chrom.sizes T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.merge.bw
 ~/group/software/ucsc/bedGraphToBigWig T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.merge.bedgraph /storage/home/gzx103/group/projects/vision/input_norm/mm10.chrom.sizes T_CD8_SPL.fisher_p.txt.all5info.txt.pknorm_pkid.merge.bw
