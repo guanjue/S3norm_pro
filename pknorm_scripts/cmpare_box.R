@@ -19,7 +19,8 @@ for (i in c(1:length(info_type))){
 		ct = unlist(strsplit(files_list[j], split='[.]'))[1]
 		if (info_type[i]!='snr'){ref_sig = info_tmp[1,]}
 		if (info_type[i]=='snr'){ref_sig = log2(info_tmp[1,])}
-		for (k in c(2:length(info_methods))){
+		#for (k in c(2:length(info_methods))){
+		for (k in c(2,3,4,6)){
 			if (info_type[i]!='snr'){
 				info_matrix = rbind(info_matrix, c(info_methods[k], info_tmp[k,]))
 			} else{
