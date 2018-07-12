@@ -29,7 +29,7 @@ get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
 			ProbT = 0.9
 		}
 		SizeT = mean_non0 * (1-i) * ProbT / (1-ProbT)
-		
+
 		nb_v_T = rnbinom(1e+4, SizeT, ProbT)
 		p0_new = sum(nb_v_T==0) / length(nb_v_T)
 		p0_dif = abs(i-p0_new)
@@ -43,8 +43,6 @@ get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
 			best_p0 = i
 		}
 	}
-	print('true p0:')
-	print(sum(nb_v==0)/length(nb_v))
 	print('estimated p0: ')
 	print(best_p0)
 	ProbT = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-best_p0))
@@ -67,6 +65,8 @@ sig_bg_mean = mean(sig_bg_non0)
 sig_bg_mean_sig2 = mean(sig_bg_non0^2)
 sig_bg_var = var(sig_bg_non0)
 
+print('observed p0: ')
+print(sum(sig_bg>thesh) / dim(sig_bg)[1])
 probT_sizeT_p0 = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
 
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_bg_var/sig_bg_mean, digits=3)) ))
