@@ -66,6 +66,7 @@ get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
 			print(paste('iteration:', toString(k)))
 			print('change best_p0')
 			best_prob_dif = abs(i-p0_new)
+			print(best_prob_dif)
 			best_p0 = i
 		}
 	}
