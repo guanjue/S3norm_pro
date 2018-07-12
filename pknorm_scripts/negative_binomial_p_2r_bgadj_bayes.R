@@ -56,6 +56,12 @@ get_true_NB_prob_size = function(x){
 	m2=mean(x[x>0]^2);
 	p0 = length(which(x==0)) / length(x);
 	p = m/(m2-m^2 * (1-p0));
+	if (p<0.1){
+		p = 0.1
+	}
+	if (p>=0.9){
+		p = 0.9
+	}
 	s = m * (1 - p0) * p /(1-p);
 	rt=c(p,s,p0);
 
@@ -65,6 +71,12 @@ get_true_NB_prob_size = function(x){
 		p0=p^s;
 		print(p0)
 		p=m/(m2-m^2*(1-p0));
+		if (p<0.1){
+			p = 0.1
+		}
+		if (p>=0.9){
+			p = 0.9
+		}
 		s=m * (1 - p0) * p / (1-p);
 		#rt=rbind(rt,c(p,s,p0));
 		rt = c(p,s,p0)
