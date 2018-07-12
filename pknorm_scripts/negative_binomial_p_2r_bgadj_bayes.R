@@ -67,7 +67,7 @@ sig_bg_var = var(sig_bg_non0)
 
 print('observed p0: ')
 print(sum(sig_bg>thesh) / dim(sig_bg)[1])
-probT_sizeT_p0 = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
+probT_sizeT = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
 
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_bg_var/sig_bg_mean, digits=3)) ))
 print(sig_bg_mean)
@@ -120,7 +120,7 @@ sig_bg_mean = mean(sig_bg_non0)
 sig_bg_mean_sig2 = mean(sig_bg_non0^2)
 sig_bg_var = var(sig_bg_non0)
 
-probT_sizeT_p0 = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
+probT_sizeT = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
 
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_bg_var/sig_bg_mean, digits=3)) ))
 print(sig_bg_mean)
