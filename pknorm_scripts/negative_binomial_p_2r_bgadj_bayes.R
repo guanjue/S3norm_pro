@@ -60,7 +60,7 @@ get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
 		k = k+1
 		ProbT = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-i))
 		SizeT = mean_non0 * (1-i) * ProbT / (1-ProbT)
-		nb_v_T = rnbinom(1e+4, s, p)
+		nb_v_T = rnbinom(1e+4, SizeT, ProbT)
 		p0_new = sum(nb_v_T==0) / length(nb_v_T)
 		if (abs(i-p0_new) < best_prob_dif){
 			print(paste('iteration:', toString(k)))
