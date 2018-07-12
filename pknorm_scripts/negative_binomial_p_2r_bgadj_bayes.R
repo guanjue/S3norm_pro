@@ -63,6 +63,7 @@ get_true_NB_prob_size = function(x){
 		op = p;
 		os = s;
 		p0=p^s;
+		print(p0)
 		p=m/(m2-m^2*(1-p0));
 		s=m * (1 - p0) * p / (1-p);
 		#rt=rbind(rt,c(p,s,p0));
