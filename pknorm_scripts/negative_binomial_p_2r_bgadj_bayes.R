@@ -13,7 +13,7 @@ var_vec = c()
 size_vec = c()
 prob_vec = c()
 
-get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
+get_true_NB_prob_size_pre = function(mean_non0, mean_x2_non0){
 	###### identify p0
 	best_p0 = 0
 	best_prob_dif = 1
