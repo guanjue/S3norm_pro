@@ -58,8 +58,8 @@ get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
 	k=0
 	for (i in seq(0,0.99,0.005)){
 		k = k+1
-		p = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-i))
-		s = mean_non0 * (1-i) * ProbT / (1-ProbT)
+		ProbT = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-i))
+		SizeT = mean_non0 * (1-i) * ProbT / (1-ProbT)
 		nb_v_T = rnbinom(1e+4, s, p)
 		p0_new = sum(nb_v_T==0) / length(nb_v_T)
 		if (abs(i-p0_new) < best_prob_dif){
@@ -69,11 +69,11 @@ get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
 			best_p0 = i
 		}
 	}
-	p = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-best_p0))
-	s = mean_non0 * (1-best_p0) * ProbT / (1-ProbT)
+	ProbT = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-best_p0))
+	SizeT = mean_non0 * (1-best_p0) * ProbT / (1-ProbT)
 	print('estimated p0: ')
 	print(best_p0)
-	return(c(p, s, best_p0))
+	return(c(ProbT, SizeT, best_p0))
 }
 
 
