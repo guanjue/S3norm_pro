@@ -51,31 +51,29 @@ get_true_NB_prob_size_pre = function(mean_non0, mean_x2_non0){
 }
 
 
-get_true_NB_prob_size = function(mean_non0, mean_x2_non0){
-	###### identify p0
-	best_p0 = 0
-	best_prob_dif = 1
-	k=0
-	for (i in seq(0,0.99,0.005)){
-		k = k+1
-		ProbT = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-i))
-		SizeT = mean_non0 * (1-i) * ProbT / (1-ProbT)
-		nb_v_T = rnbinom(1e+4, SizeT, ProbT)
-		p0_new = sum(nb_v_T==0) / length(nb_v_T)
-		if (abs(i-p0_new) < best_prob_dif){
-			print(paste('iteration:', toString(k)))
-			print('change best_p0')
-			best_prob_dif = abs(i-p0_new)
-			print(best_prob_dif)
-			best_p0 = i
-		}
+get_true_NB_prob_size = function(x){
+	m=mean(x[x>0]);
+	m2=mean(x[x>0]^2);
+	p0 = length(which(x==0)) / length(x);
+	p = m/(m2-m^2 * (1-p0));
+	s = m * (1 - p0) * p /(1-p);
+	rt=c(p,s,p0);
+
+	for(i in 1:100){
+		op = p;
+		os = s;
+		p0=p^s;
+		p=m/(m2-m^2*(1-p0));
+		s=m * (1 - p0) * p / (1-p);
+		#rt=rbind(rt,c(p,s,p0));
+		rt = c(p,s,p0)
+		if(abs(op-p)<0.00001 & abs(os-s)<0.00001) break;
 	}
-	ProbT = mean_non0 / (mean_x2_non0 - mean_non0^2 * (1-best_p0))
-	SizeT = mean_non0 * (1-best_p0) * ProbT / (1-ProbT)
-	print('estimated p0: ')
-	print(best_p0)
-	return(c(ProbT, SizeT, best_p0))
+	print('change best_p0: ')
+	print(p0)
+	return(rt);
 }
+
 
 
 ### read data
@@ -97,7 +95,7 @@ print('observed p0: ')
 print(sum(sig_bg>thesh) / length(sig_bg)[1])
 #probT_sizeT = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
 
-probT_sizeT = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
+probT_sizeT = get_true_NB_prob_size(sig)
 
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_bg_var/sig_bg_mean, digits=3)) ))
 print(sig_bg_mean)
@@ -150,7 +148,7 @@ sig_bg_mean = mean(sig_bg_non0)
 sig_bg_mean_sig2 = mean(sig_bg_non0^2)
 sig_bg_var = var(sig_bg_non0)
 
-probT_sizeT = get_true_NB_prob_size(sig_bg_mean, sig_bg_mean_sig2)
+probT_sizeT = get_true_NB_prob_size(sig_bg)
 
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_bg_var/sig_bg_mean, digits=3)) ))
 print(sig_bg_mean)
