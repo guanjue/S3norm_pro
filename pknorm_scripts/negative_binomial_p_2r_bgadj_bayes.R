@@ -71,12 +71,12 @@ get_true_NB_prob_size = function(x){
 		p0=p^s;
 		print(p0)
 		p=m/(m2-m^2*(1-p0));
-		if (p<0.1){
-			p = 0.1
-		}
-		if (p>=0.9){
-			p = 0.9
-		}
+		#if (p<0.1){
+		#	p = 0.1
+		#}
+		#if (p>=0.9){
+		#	p = 0.9
+		#}
 		s=m * (1 - p0) * p / (1-p);
 		#rt=rbind(rt,c(p,s,p0));
 		rt = c(p,s,p0)
@@ -97,13 +97,16 @@ input = read.table(paste(input_folder, input_track_file, sep=''), header = F)
 #####################################################################################################################
 #####################################################################################################################
 ### get sig bg regions no bgs
+thresh = 0
+
 sig_0 = sig[,1]
+sig_0 = sig_0[sig_0>thresh]
 sig_0_mean = mean(sig_0)
 sig_0_moment2 = mean(sig_0^2)
 sig_0_var = var(sig_0)
 
 
-#sig_0_probT_sizeT = get_true_NB_prob_size(sig_0)
+sig_0_probT_sizeT = get_true_NB_prob_size(sig_0)
 
 print(paste('check signal track overdispersion in background regions, var/mean=', toString(round(sig_0_var/sig_0_mean, digits=3)) ))
 print(sig_0_mean)
@@ -111,8 +114,8 @@ print(sig_0_var)
 print(length(sig_0))
 
 ### get negative binomial parameters from signal track bg regions
-#sig_0_prob = sig_0_probT_sizeT[1]
-sig_0_prob = sig_0_mean / sig_0_var
+sig_0_prob = sig_0_probT_sizeT[1]
+#sig_0_prob = sig_0_mean / sig_0_var
 if (sig_0_prob<0.1){
 	sig_0_prob = 0.1
 }
@@ -123,8 +126,8 @@ if (sig_0_prob>=0.9){
 
 #p0 = probT_sizeT[3]
 #sig_bg_size = sig_bg_mean^2 * (1-p0) / (sig_bg_mean_sig2 - sig_bg_mean^2 * (1-p0) - sig_bg_mean)
-sig_0_size = sig_0_mean * sig_0_prob / (1-sig_0_prob)
-
+#sig_0_size = sig_0_mean * sig_0_prob / (1-sig_0_prob)
+sig_0_size = probT_sizeT[2]
 
 ### get input bg regions
 input_0 = input[,1]
@@ -141,8 +144,18 @@ print(summary(input_0))
 print(input_0_mean)
 print(input_0_var)
 
+print('check NB distribution: ')
+print(sig_0_size)
+print(sig_0_prob)
+print(p0)
+nb_v_Test = rnbinom(1e+4, sig_0_size, sig_0_prob)
+print(mean(nb_v_Test))
+print(var(nb_v_Test))
+
+
 ### get negative binomial p-value 1st round
 nb_pval = apply(sig, MARGIN=1, function(x) pnbinom(x[1], sig_0_size, sig_0_prob, lower.tail=FALSE) )
+
 ### get -log10(p-value)
 print('get -log10(p-value)')
 print(min(nb_pval[nb_pval!=0]))
@@ -156,19 +169,19 @@ print(summary(nb_pval))
 
 
 ############### 2nd round
-thesh = 0
+thresh = 0
 
 ### get sig bg regions
 sig_bg = sig[nb_pval>=0.001,]
 print('sum(nb_pval>=0.001): ')
 print(sum(nb_pval>=0.001))
-sig_bg_non0 = sig_bg[sig_bg>thesh]
+sig_bg_non0 = sig_bg[sig_bg>thresh]
 sig_bg_mean = mean(sig_bg_non0)
 sig_bg_moment2 = mean(sig_bg_non0^2)
 sig_bg_var = var(sig_bg_non0)
 
 print('observed p0: ')
-print(sum(sig_bg>thesh) / length(sig_bg)[1])
+print(sum(sig_bg>thresh) / length(sig_bg)[1])
 
 probT_sizeT = get_true_NB_prob_size(sig_bg)
 
@@ -189,7 +202,8 @@ if (sig_bg_prob>=0.9){
 
 ### get p0 & size
 p0 = probT_sizeT[3]
-sig_bg_size = sig_bg_mean^2 * (1-p0) / (sig_bg_moment2 - sig_bg_mean^2 * (1-p0) - sig_bg_mean)
+#sig_bg_size = sig_bg_mean^2 * (1-p0) / (sig_bg_moment2 - sig_bg_mean^2 * (1-p0) - sig_bg_mean)
+sig_bg_size = probT_sizeT[2]
 
 mean_vec[1] = sig_bg_mean
 var_vec[1] = sig_bg_var
@@ -197,6 +211,16 @@ size_vec[1] = sig_bg_size
 prob_vec[1] = sig_bg_prob
 
 ### get negative binomial p-value
+
+print('check NB distribution (BG): ')
+print(sig_bg_size)
+print(sig_bg_prob)
+print(p0)
+nb_v_Test = rnbinom(1e+4, sig_bg_size, sig_bg_prob)
+print(mean(nb_v_Test))
+print(var(nb_v_Test))
+
+
 sig_input = cbind(sig, input)
 nb_pval = apply(sig_input, MARGIN=1, function(x) pnbinom(x[1], sig_bg_size * (x[2]+1)/(input_0_mean+1), sig_bg_prob, lower.tail=FALSE) )
 
