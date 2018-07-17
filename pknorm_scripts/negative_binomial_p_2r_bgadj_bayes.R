@@ -88,7 +88,7 @@ get_true_NB_prob_size = function(x){
 }
 
 
-get_pval = function(N, l, sig_0_size, sig_0_prob, num_0){
+get_pval_pre = function(N, l, sig_0_size, sig_0_prob, num_0){
 	#3 get the probability of region that 0 < sig <= N
 	pval_non0_N = pnbinom(N, sig_0_size, sig_0_prob, lower.tail = TRUE) - pnbinom(0, sig_0_size, sig_0_prob, lower.tail = TRUE)
 
@@ -107,6 +107,10 @@ get_pval = function(N, l, sig_0_size, sig_0_prob, num_0){
 	return(pval_new)
 }
 
+get_pval = function(N, l, sig_0_size, sig_0_prob, num_0){
+	pval_new = pnbinom(N, sig_0_size, sig_0_prob, lower.tail=FALSE) / pnbinom(1, sig_0_size, sig_0_prob, lower.tail=FALSE) * (l-num_0)/l
+	return(pval_new)
+}
 
 ### read data
 sig = read.table(paste(signal_folder, signal_track_file, sep=''), header = F)
