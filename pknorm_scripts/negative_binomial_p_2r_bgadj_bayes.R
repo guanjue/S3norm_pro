@@ -124,7 +124,7 @@ input = read.table(paste(input_folder, input_track_file, sep=''), header = F)
 thresh = 0
 
 sig_0 = sig[,1]
-sig_0 = sig_0[sig_0>thresh]
+#sig_0 = sig_0[sig_0>thresh]
 obs_0_num = sum(sig_0==thresh)
 sig_0_mean = mean(sig_0)
 sig_0_moment2 = mean(sig_0^2)
