@@ -252,7 +252,7 @@ print(var(nb_v_Test))
 
 sig_input = cbind(sig, input)
 #nb_pval = apply(sig_input, MARGIN=1, function(x) pnbinom(x[1], sig_bg_size * (x[2]+1)/(input_0_mean+1), sig_bg_prob, lower.tail=FALSE) )
-nb_pval = apply(sig, MARGIN=1, function(x) get_pval(x[1], bin_num, sig_0_size* (x[2]+1)/(input_0_mean+1), sig_0_prob, obs_0_num) )
+nb_pval = apply(sig_input, MARGIN=1, function(x) get_pval(x[1], bin_num, sig_bg_size * (x[2]+1)/(input_0_mean+1), sig_bg_prob, obs_0_num) )
 
 ### get -log10(p-value)
 nb_pval[nb_pval<=1e-324] = 1e-324
