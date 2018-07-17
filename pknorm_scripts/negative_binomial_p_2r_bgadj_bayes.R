@@ -102,7 +102,7 @@ get_pval = function(N, l, sig_0_size, sig_0_prob, num_0){
 	num_N_ = l * pval_N_
 
 	#8 the new p-value for the bin
-	pval_new = num_nonN_ / (num_0 + num_non0_N + num_N_)
+	pval_new = num_N_ / (num_0 + num_non0_N + num_N_)
 
 	return(pval_new)
 }
