@@ -88,6 +88,25 @@ get_true_NB_prob_size = function(x){
 }
 
 
+get_pval = function(N, l, sig_0_size, sig_0_prob, num_0){
+	#3 get the probability of region that 0 < sig <= N
+	pval_non0_N = pnbinom(N, sig_0_size, sig_0_prob, lower.tail = TRUE) - pnbinom(0, sig_0_size, sig_0_prob, lower.tail = TRUE)
+
+	#4 get the probability of region that N < sig
+	pval_N_ = pnbinom(N, sig_0_size, sig_0_prob, lower.tail = FALSE)
+
+	###5 calculate the theoritical number of bins that 0 < sig <= N
+	num_non0_N = l * pval_non0_N
+
+	#6 calculate the theoritical number of bins that N < sig
+	num_N_ = l * pval_N_
+
+	#8 the new p-value for the bin
+	pval_new = num_nonN_ / (num_0 + num_non0_N + num_N_)
+
+	return(pval_new)
+}
+
 
 ### read data
 sig = read.table(paste(signal_folder, signal_track_file, sep=''), header = F)
@@ -101,6 +120,7 @@ thresh = 0
 
 sig_0 = sig[,1]
 sig_0 = sig_0[sig_0>thresh]
+obs_0_num = sum(sig_0==thresh)
 sig_0_mean = mean(sig_0)
 sig_0_moment2 = mean(sig_0^2)
 sig_0_var = var(sig_0)
@@ -153,8 +173,17 @@ print(mean(nb_v_Test))
 print(var(nb_v_Test))
 
 
+bin_num = dim(sig)[1]
+
 ### get negative binomial p-value 1st round
-nb_pval = apply(sig, MARGIN=1, function(x) pnbinom(x[1], sig_0_size, sig_0_prob, lower.tail=FALSE) )
+nb_pval = apply(sig, MARGIN=1, function(x) get_pval(x[1], bin_num, sig_0_size, sig_0_prob, obs_0_num) )
+
+### get -log10(p-value)
+nb_pval[nb_pval<=1e-324] = 1e-324
+neglog10_nb_pval = -log10(nb_pval)
+
+### write output
+write.table(neglog10_nb_pval, paste(output_name, '.nbp_1r_bgadj.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
 
 ### get -log10(p-value)
 print('get -log10(p-value)')
@@ -222,7 +251,8 @@ print(var(nb_v_Test))
 
 
 sig_input = cbind(sig, input)
-nb_pval = apply(sig_input, MARGIN=1, function(x) pnbinom(x[1], sig_bg_size * (x[2]+1)/(input_0_mean+1), sig_bg_prob, lower.tail=FALSE) )
+#nb_pval = apply(sig_input, MARGIN=1, function(x) pnbinom(x[1], sig_bg_size * (x[2]+1)/(input_0_mean+1), sig_bg_prob, lower.tail=FALSE) )
+nb_pval = apply(sig, MARGIN=1, function(x) get_pval(x[1], bin_num, sig_0_size* (x[2]+1)/(input_0_mean+1), sig_0_prob, obs_0_num) )
 
 ### get -log10(p-value)
 nb_pval[nb_pval<=1e-324] = 1e-324
