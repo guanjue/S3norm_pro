@@ -20,7 +20,7 @@ for (i in c(1:length(info_type))){
 		if (info_type[i]!='snr'){ref_sig = info_tmp[1,]}
 		if (info_type[i]=='snr'){ref_sig = log2(info_tmp[1,])}
 		#for (k in c(2:length(info_methods))){
-		for (k in c(2,3,4,6)){
+		for (k in c(2,3,4,5,6)){
 			if (info_type[i]!='snr'){
 				info_matrix = rbind(info_matrix, c(info_methods[k], info_tmp[k,]))
 			} else{
@@ -31,7 +31,7 @@ for (i in c(1:length(info_type))){
 	info_matrix = as.data.frame(info_matrix)
 	colnames(info_matrix) = c('method', 'sig')
 	info_matrix[,2] = apply(info_matrix, 1, function(x) as.numeric(x[2]))
-	png(paste(info_type[i], '.box.png', sep=''), width=500, height=500)
+	pdf(paste(info_type[i], '.box.pdf', sep=''))#, width=500, height=500)
 	p = ggplot(data = info_matrix, aes(x=method, y=sig)) 
 	p = p + geom_boxplot(aes(fill = method))
 	p = p + geom_point(aes(y=sig, group=method), position = position_dodge(width=0.75))
