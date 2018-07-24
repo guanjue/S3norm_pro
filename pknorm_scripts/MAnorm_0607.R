@@ -54,6 +54,7 @@ sig1 = scan(input_sig1)
 sig2 = scan(input_sig2)
 totalmean_sf = sum(sig1) / sum(sig2)
 sig3 = (sig2) * totalmean_sf #- small_num
+sig4 = scale(sig2) #- small_num
 
 
 #sig1_binary = get_nbp(sig1) <= 0.001
@@ -92,6 +93,7 @@ sig2_rescaled = 2^log2_allregion_count_read2_rescaled - small_num
 #write.table(info, paste(output, '.MA.norm.info.txt', sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 write.table(sig2_rescaled, paste(output,".manorm.txt", sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 write.table(sig3, paste(output,".trnorm.txt", sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
+write.table(sig4, paste(output,".znorm.txt", sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 
 
 
