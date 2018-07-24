@@ -180,7 +180,7 @@ sig1_mean_pk = mean(sig1[sig1_pk_id])
 sig1_mean_bg = mean(sig1[!sig1_pk_id])
 
 set.seed(2018)
-sample_id = sample(dim(sig_matrix)[1], 100000)
+sample_id = sample(dim(sig_matrix)[1], 500000)
 
 for ( i in c(1:dim(sig_matrix)[2])){
 	print(sig_matrix_colnames[i])
