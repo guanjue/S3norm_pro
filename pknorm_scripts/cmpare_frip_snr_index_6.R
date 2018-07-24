@@ -15,11 +15,14 @@ sig2_QTnorm = args[5]
 
 sig2_PKnorm = args[6]
 
-output_name = args[7]
-fdr_thresh = as.numeric(args[8])
-method=args[9]
+sig1_Znorm = args[7]
+sig2_Znorm = args[8]
 
-bed_file=args[10]
+output_name = args[9]
+fdr_thresh = as.numeric(args[10])
+method=args[11]
+
+bed_file=args[12]
 
 ################################################
 nbp_2r = function(sig, p_lim_1r, output_name){
@@ -146,6 +149,8 @@ sig2_tr = scan(sig2_TRnorm)
 sig2_ma = scan(sig2_MAnorm)
 sig2_qt = scan(sig2_QTnorm)
 sig2_pk = scan(sig2_PKnorm)
+sig1_z = scan(sig1_Znorm)
+sig2_z = scan(sig2_Znorm)
 
 sig_matrix = as.matrix(cbind(sig1, sig2_r, sig2_tr, sig2_ma, sig2_qt, sig2_pk, sig1_z, sig2_z))
 sig_matrix_colnames = c('sig1', 'sig2_r', 'sig2_tr', 'sig2_ma', 'sig2_qt', 'sig2_pk', 'sig1_z', 'sig2_z')
