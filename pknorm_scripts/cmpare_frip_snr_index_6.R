@@ -190,7 +190,7 @@ sig1_mean_bg = mean(sig1[!sig1_pk_id])
 set.seed(2018)
 sample_id = sample(dim(sig_matrix)[1], 100000)
 
-for ( i in c(1:dim(sig_matrix)[2])){
+for ( i in c(1:(dim(sig_matrix)[2]-2))){
 	print(sig_matrix_colnames[i])
 	### get info
 	nbp_tmp = sig_matrix_p[,i]
@@ -231,6 +231,21 @@ for ( i in c(1:dim(sig_matrix)[2])){
 	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 2.7)
 	dev.off()
 }
+
+cpk = (sig_matrix_p[,-2] * sig_matrix_p[,-1]) == 1
+cbg = (sig_matrix_p[,-1] + sig_matrix_p[,-1]) == 0
+ref_all_s = sig1_z[sample_id]
+tar_all_s = sig2_z[sample_id]
+cpk_s = cpk[sample_id]
+cbg_s = cbg[sample_id]
+ref_cpk_s = ref_all_s[cpk_s]
+tar_cpk_s = tar_all_s[cpk_s]
+ref_cbg_s = ref_all_s[cbg_s]
+tar_cbg_s = tar_all_s[cbg_s]
+png(paste(output_name, sig_matrix_colnames[dim(sig_matrix)[2]], '.scatter.png', sep=''))
+plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 2.7)
+dev.off()
+
 
 
 bed_file = as.data.frame(read.table(bed_file, header=F, sep='\t'))
