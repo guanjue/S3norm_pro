@@ -6,7 +6,7 @@ small_num = 0.01
 random_sample_num = 1000000
 upperlim = 1000
 lowerlim = 0
-ct = unlist(strsplit(input_sig2, "[.]"))[1]
+ct = unlist(strsplit(input_sig1, "[.]"))[1]
 
 sig1 = scan(input_sig1)
 sig1_log2 = log2(sig1+small_num)
