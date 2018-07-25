@@ -26,25 +26,25 @@ bed_file=args[12]
 
 
 
-sig1_raw = 'ERY_ad.ctcfrep.fisher_p.txt'
-sig2_raw = 'T_CD8_SPL.ctcfrep.fisher_p.txt'
+#sig1_raw = 'ERY_ad.ctcfrep.fisher_p.txt'
+#sig2_raw = 'T_CD8_SPL.ctcfrep.fisher_p.txt'
 
-sig2_TRnorm = 'T_CD8_SPL.trnorm.txt'
+#sig2_TRnorm = 'T_CD8_SPL.trnorm.txt'
 
-sig2_MAnorm = 'T_CD8_SPL.manorm.txt'
+#sig2_MAnorm = 'T_CD8_SPL.manorm.txt'
 
-sig2_QTnorm = 'T_CD8_SPL.ctcfrep.fisher_p.txt.qtn.txt'
+#sig2_QTnorm = 'T_CD8_SPL.ctcfrep.fisher_p.txt.qtn.txt'
 
-sig2_PKnorm = 'T_CD8_SPL_fisher_p.pknorm.txt'
+#sig2_PKnorm = 'T_CD8_SPL_fisher_p.pknorm.txt'
 
-sig1_Znorm = 'ERY_ad.znorm.txt'
-sig2_Znorm = 'T_CD8_SPL.znorm.txt'
+#sig1_Znorm = 'ERY_ad.znorm.txt'
+#sig2_Znorm = 'T_CD8_SPL.znorm.txt'
 
-output_name = 'T_CD8_SPL.ctcfrep.fisher_p.txt.all5info.txt'
-fdr_thresh = as.numeric(0.05)
-method='neglog10p'
+#output_name = 'T_CD8_SPL.ctcfrep.fisher_p.txt.all5info.txt'
+#fdr_thresh = as.numeric(0.05)
+#method='neglog10p'
 
-bed_file='/storage/home/gzx103/scratch/vision/all_final_data/200_noblack.11_22_2017.bed'
+#bed_file='/storage/home/gzx103/scratch/vision/all_final_data/200_noblack.11_22_2017.bed'
 
 
 ################################################
