@@ -257,12 +257,49 @@ for ( i in c(1:(dim(sig_matrix)[2]-2))){
 
 ### sig1z
 nbp_tmp = sig_matrix_p[,dim(sig_matrix_p)[2]-1]
+sig_tmp = sig_matrix[,dim(sig_matrix_p)[2]-1]
 pk_id_tmp = nbp_tmp<fdr_thresh
 sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
+bg_id_tmp = nbp_tmp>=fdr_thresh
+frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
+mean_pk = mean(sig_tmp[pk_id_tmp])
+mean_bg = mean(sig_tmp[bg_id_tmp])
+snr_tmp = mean_pk / mean_bg
+pk_num_tmp = sum(pk_id_tmp)
+ari_tmp = adjustedRandIndex(sig1_pk_id, pk_id_tmp)
+ji_tmp = jaccard_index(sig1_pk_id, pk_id_tmp)
+frip_common_tmp = frip_common(sig1, sig1_pk_id, sig_tmp, pk_id_tmp)
+### append(info)
+frip_all[dim(sig_matrix_p)[2]-1] = frip_tmp
+snr_all[dim(sig_matrix_p)[2]-1] = snr_tmp
+pk_num_all[dim(sig_matrix_p)[2]-1] = pk_num_tmp
+ari_all[dim(sig_matrix_p)[2]-1] = ari_tmp
+ji_all[dim(sig_matrix_p)[2]-1] = ji_tmp
+frip_common_all = cbind(frip_common_all, frip_common_tmp)
+
 ### sig2z
 nbp_tmp = sig_matrix_p[,dim(sig_matrix_p)[2]]
+sig_tmp = sig_matrix[,dim(sig_matrix_p)[2]]
 pk_id_tmp = nbp_tmp<fdr_thresh
 sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
+bg_id_tmp = nbp_tmp>=fdr_thresh
+frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
+mean_pk = mean(sig_tmp[pk_id_tmp])
+mean_bg = mean(sig_tmp[bg_id_tmp])
+snr_tmp = mean_pk / mean_bg
+pk_num_tmp = sum(pk_id_tmp)
+ari_tmp = adjustedRandIndex(sig1_pk_id, pk_id_tmp)
+ji_tmp = jaccard_index(sig1_pk_id, pk_id_tmp)
+frip_common_tmp = frip_common(sig1, sig1_pk_id, sig_tmp, pk_id_tmp)
+### append(info)
+frip_all[dim(sig_matrix_p)[2]] = frip_tmp
+snr_all[dim(sig_matrix_p)[2]] = snr_tmp
+pk_num_all[dim(sig_matrix_p)[2]] = pk_num_tmp
+ari_all[dim(sig_matrix_p)[2]] = ari_tmp
+ji_all[dim(sig_matrix_p)[2]] = ji_tmp
+frip_common_all = cbind(frip_common_all, frip_common_tmp)
+
+
 ### plot
 ref_pk_id = sig_matrix_p[,dim(sig_matrix_p)[2]]<fdr_thresh
 tar_pk_id = sig_matrix_p[,dim(sig_matrix_p)[2]-1]<fdr_thresh
