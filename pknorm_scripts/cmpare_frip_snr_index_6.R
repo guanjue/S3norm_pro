@@ -278,6 +278,10 @@ ref_cbg_s = ref_all_s[cbg_s]
 tar_cbg_s = tar_all_s[cbg_s]
 cpk_mean = c(mean(sig1_z[cpk]), mean(sig2_z[cpk]))
 cbg_mean = c(mean(sig1_z[cbg]), mean(sig2_z[cbg]))
+print(cpk_mean)
+print(cbg_mean)
+
+all_mean = c(mean(sig1_z), mean(sig2_z))
 png(paste(output_name, sig_matrix_colnames[dim(sig_matrix)[2]], '.scatter.png', sep=''))
 plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 15)
 dev.off()
