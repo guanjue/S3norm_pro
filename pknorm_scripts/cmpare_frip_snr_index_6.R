@@ -24,6 +24,29 @@ method=args[11]
 
 bed_file=args[12]
 
+
+
+sig1_raw = 'ERY_ad.ctcfrep.fisher_p.txt'
+sig2_raw = 'T_CD8_SPL.ctcfrep.fisher_p.txt'
+
+sig2_TRnorm = 'T_CD8_SPL.trnorm.txt'
+
+sig2_MAnorm = 'T_CD8_SPL.manorm.txt'
+
+sig2_QTnorm = 'T_CD8_SPL.ctcfrep.fisher_p.txt.qtn.txt'
+
+sig2_PKnorm = 'T_CD8_SPL_fisher_p.pknorm.txt'
+
+sig1_Znorm = 'ERY_ad.znorm.txt'
+sig2_Znorm = 'T_CD8_SPL.znorm.txt'
+
+output_name = 'T_CD8_SPL.ctcfrep.fisher_p.txt.all5info.txt'
+fdr_thresh = as.numeric(0.05)
+method='neglog10p'
+
+bed_file='/storage/home/gzx103/scratch/vision/all_final_data/200_noblack.11_22_2017.bed'
+
+
 ################################################
 nbp_2r = function(sig, p_lim_1r, output_name){
 	### get mean & var
@@ -168,8 +191,8 @@ if (method == 'nbp'){
 	sig_matrix_p = apply(sig_matrix, 2, function(x) p.adjust(zp_2r(x, 0.001), method='fdr'))
 }
 
-sig_matrix_p[,-2] = p.adjust(pnorm(-sig1_z), method='fdr')
-sig_matrix_p[,-1] = p.adjust(pnorm(-sig2_z), method='fdr')
+sig_matrix_p[,dim(sig_matrix_p)[2]-1] = p.adjust(pnorm(-sig1_z), method='fdr')
+sig_matrix_p[,dim(sig_matrix_p)[2]] = p.adjust(pnorm(-sig2_z), method='fdr')
 
 
 
@@ -228,12 +251,21 @@ for ( i in c(1:(dim(sig_matrix)[2]-2))){
 	cpk_mean = c(log10(mean(sig1[cpk])+0.01), log10(mean(sig_tmp[cpk])+0.01))
 	cbg_mean = c(log10(mean(sig1[cbg])+0.01), log10(mean(sig_tmp[cbg])+0.01))
 	png(paste(output_name, sig_matrix_colnames[i], '.scatter.png', sep=''))
-	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 2.7)
+	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -1.1, 2.5)
 	dev.off()
 }
 
-cpk = (sig_matrix_p[,-2] * sig_matrix_p[,-1]) == 1
-cbg = (sig_matrix_p[,-1] + sig_matrix_p[,-1]) == 0
+### sig1z
+nbp_tmp = sig_matrix_p[,dim(sig_matrix_p)[2]-1]
+pk_id_tmp = nbp_tmp<fdr_thresh
+sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
+### sig2z
+nbp_tmp = sig_matrix_p[,dim(sig_matrix_p)[2]]
+pk_id_tmp = nbp_tmp<fdr_thresh
+sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
+### plot
+cpk = (sig_matrix_p[,dim(sig_matrix_p)[2]-1] * sig_matrix_p[,dim(sig_matrix_p)[2]]) == 1
+cbg = (sig_matrix_p[,dim(sig_matrix_p)[2]-1] + sig_matrix_p[,dim(sig_matrix_p)[2]]) == 0
 ref_all_s = sig1_z[sample_id]
 tar_all_s = sig2_z[sample_id]
 cpk_s = cpk[sample_id]
