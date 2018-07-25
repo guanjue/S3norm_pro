@@ -264,8 +264,8 @@ nbp_tmp = sig_matrix_p[,dim(sig_matrix_p)[2]]
 pk_id_tmp = nbp_tmp<fdr_thresh
 sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
 ### plot
-ref_pk_id = sig_matrix_p[,-1]<fdr_thresh
-tar_pk_id = sig_matrix_p[,-2]<fdr_thresh
+ref_pk_id = sig_matrix_p[,dim(sig_matrix_p)[2]]<fdr_thresh
+tar_pk_id = sig_matrix_p[,dim(sig_matrix_p)[2]-1]<fdr_thresh
 cpk = (ref_pk_id * tar_pk_id) == 1
 cbg = (ref_pk_id + tar_pk_id) == 0
 ref_all_s = sig1_z[sample_id]
@@ -280,8 +280,8 @@ cpk_mean = c(mean(sig1_z[cpk]), mean(sig2_z[cpk]))
 cbg_mean = c(mean(sig1_z[cbg]), mean(sig2_z[cbg]))
 print(cpk_mean)
 print(cbg_mean)
-
 all_mean = c(mean(sig1_z), mean(sig2_z))
+print(all_mean)
 png(paste(output_name, sig_matrix_colnames[dim(sig_matrix)[2]], '.scatter.png', sep=''))
 plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 15)
 dev.off()
