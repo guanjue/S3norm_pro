@@ -19,7 +19,7 @@ used_id_rna_tpm = (rna_tpm_max>=tpm_lim) * (rna_tpm_non0_num>=dim(rna_tpm)[2]) >
 
 
 ###### get cross cell type correlation
-methods = c('raw', 'trnorm', 'manorm', 'loessnorm', 'qtnorm', 'pknorm')
+methods = c('raw', 'trnorm', 'manorm', 'znorm', 'qtnorm', 'pknorm')
 
 for (m in methods){
 	print(m)
@@ -47,7 +47,7 @@ for (m in methods){
 
 
 
-methods = c('raw', 'trnorm', 'manorm', 'loessnorm', 'qtnorm', 'pknorm')
+methods = c('raw', 'trnorm', 'manorm', 'znorm', 'qtnorm', 'pknorm')
 k = 10
 my.cols = rev(brewer.pal(k, "RdYlBu"))
 
@@ -76,7 +76,7 @@ dev.off()
 
 
 ###### get rna_dif vs chip-dif 6 plots
-methods = c('raw', 'trnorm', 'manorm', 'loessnorm', 'qtnorm', 'pknorm')
+methods = c('raw', 'trnorm', 'manorm', 'znorm', 'qtnorm', 'pknorm')
 k = 10
 cor_matrix = c()
 cor_matrix_bg=c()
