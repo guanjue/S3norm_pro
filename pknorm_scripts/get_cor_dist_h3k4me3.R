@@ -11,46 +11,15 @@ total_rpk = colSums(data0[,-1])
 
 rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*10000000))
 rna_tpm_max = apply(rna_tpm, 1, max)
-tpm_lim=5
-sd_mean_lim = 0.6
-non0_count_lim = 7
-png('hist_rna_tpm_max.png')
-hist(log2(rna_tpm_max), breaks=50)
-abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
-dev.off()
-
 rna_tpm_min = apply(rna_tpm, 1, min)
 rna_tpm_min = apply(rna_tpm, 1, min)
-
+tpm_lim=3
 rna_tpm_non0_num = apply(rna_tpm, 1, function(x) sum(x!=0))
-rna_tpm_cv = apply(rna_tpm, 1, function(x) (sd(x+0.01))/mean(x+0.01))
+used_id_rna_tpm = (rna_tpm_max>=tpm_lim) * (rna_tpm_non0_num>=dim(rna_tpm)[2]) >0
 
-#used_id_rna_tpm = ( (rna_tpm_max>=tpm_lim) * (rna_tpm_non0_num>=non0_count_lim) * (rna_tpm_cv>sd_mean_lim)) >0
-used_id_rna_tpm = (  (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
-#used_id_rna_tpm = ( (rna_tpm_cv>sd_mean_lim) * (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
-#used_id_rna_tpm = ( (rna_tpm_max>tpm_lim)  ) >0
-#used_id_rna_tpm = ( (rna_tpm_max>-1000)  ) >0
-print(sum(used_id_rna_tpm))
-
-png('hist_tpm_cv.png', width=1200, height=400)
-par(mfrow=c(1,3))
-hist(log2(rna_tpm+0.01), breaks=50)
-abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
-box()
-hist(rna_tpm_non0_num, breaks=50)
-abline(v=non0_count_lim, col='red', lwd=1.5, lty=3)
-box()
-hist(rna_tpm_cv, breaks=50)
-abline(v=sd_mean_lim, col='red', lwd=1.5, lty=3)
-box()
-dev.off()
 
 ###### get cross cell type correlation
 methods = c('raw', 'trnorm', 'manorm', 'znorm', 'qtnorm', 'pknorm')
-cor_0_matrix = c()
-cor_0_shuffle_matrix = c()
-paired_t_statistic_vec = c()
-kl_dist_vec = c()
 
 for (m in methods){
 	print(m)
@@ -59,12 +28,10 @@ for (m in methods){
 	cor_method = 'pearson'
 	small_num = 0.01
 	#shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
+	shuffle_id = sample(dim(rna_tpm)[2],dim(rna_tpm)[2])
 	d_raw = read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)
 	cor_0 = apply(cbind(rna_tpm, d_raw)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
-	shuffle_id = sample(dim(rna_tpm)[2],dim(rna_tpm)[2])
-	#d_raw_shuffle = d_raw[,shuffle_id]
-	d_raw_shuffle = t(apply(d_raw, 1, function(x) x[sample(dim(rna_tpm)[2],dim(rna_tpm)[2])]))
-	cor_0_shuffle = apply(cbind(rna_tpm, d_raw_shuffle)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
+	cor_0_shuffle = apply(cbind(rna_tpm, d_raw[,shuffle_id])[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
 	d_raw_bg = read.table(paste('tss_h3k4me3.pcsorted.', m, '.1000kb.txt', sep=''), header=F)
 	cor_0_bg = apply(cbind(rna_tpm, d_raw_bg)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
 	kl_dist_bg = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_bg[!is.na(cor_0_bg)], bw=bw_used)$y)$D2
@@ -72,41 +39,29 @@ for (m in methods){
 	paired_t = t.test(cor_0, cor_0_shuffle, paired=TRUE, alternative = 'greater')
 	paired_t_statistic = paired_t$statistic	
 	png(paste('tss_h3k4me3.pcsorted.', m, '.png', sep=''))
-	plot(density(cor_0[!is.na(cor_0)], bw=bw_used), col='green', main=paste('Paired-t-test-statistic = ', toString(round(paired_t_statistic, digits=3)), '; ', 'KL-dist = ', toString(round(kl_dist_shuffle, digits=3)), sep=''), ylim=c(0,1.5))
-	#plot(density(cor_0[!is.na(cor_0)], bw=bw_used), col='green', main=paste('Paired-t-test-statistic = ', toString(round(paired_t_statistic, digits=3)), sep=''), ylim=c(0,1.2))
+	plot(density(cor_0[!is.na(cor_0)], bw=bw_used), col='green', main=paste('Paired-t-test-statistic = ', toString(round(paired_t_statistic, digits=3)), '; ', 'KL-dist = ', toString(round(kl_dist_bg, digits=3)), ' ', toString(round(kl_dist_shuffle, digits=3)), sep=''), ylim=c(0,1.2))
 	#lines(density(cor_0_bg[!is.na(cor_0_bg)], bw=bw_used), col='black')
 	lines(density(cor_0_shuffle[!is.na(cor_0_shuffle)], bw=bw_used), col='blue')
 	dev.off()
-	cor_0_matrix = cbind(cor_0_matrix, cor_0[!is.na(cor_0)])
-	cor_0_shuffle_matrix = cbind(cor_0_shuffle_matrix, cor_0_shuffle[!is.na(cor_0_shuffle)])
-	paired_t_statistic_vec = cbind(paired_t_statistic_vec, paired_t_statistic)
-	kl_dist_vec = cbind(kl_dist_vec, kl_dist_shuffle)
 }
 
-png('cor_0_KL-dist.png', width=1200, height=800)
-barplot(kl_dist_vec[,c(1,2,3,4,5,6)], main="KL-dist", xlab="Methods", names.arg=c('Raw', 'TSnorm', 'MAnorm', 'Zscore', 'QTnorm', 'PKnorm'))
-dev.off()
 
 
 methods = c('raw', 'trnorm', 'manorm', 'znorm', 'qtnorm', 'pknorm')
 k = 10
 my.cols = rev(brewer.pal(k, "RdYlBu"))
-small_num = 0.01
-upper_lim = max((cbind(log2(rna_tpm[,]+small_num), log2(d_raw[,]+small_num))))
-lower_lim = min((cbind(log2(rna_tpm[,]+small_num), log2(d_raw[,]+small_num))))
 
-upper_lim = 2
-lower_lim = 0
+upper_lim = max(scale(cbind(log2(rna_tpm+small_num), log2(d_raw+small_num))))
+lower_lim = min(scale(cbind(log2(rna_tpm+small_num), log2(d_raw+small_num))))
 
-
-for (i in c(1:11)){
+for (i in c(1:12)){
 print(paste('sc', toString(i), '.compare.png', sep=''))
-png(paste('sc', toString(i), '.compare.png', sep=''), width=1200, height=800)
+png(paste('sc', toString(i), '.compare.png', sep=''), width=1100, height=800)
 par(mfrow=c(2,3))
 for (m in methods){
 d_raw = read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)
-rna_tpm_dif = (log2(rna_tpm[used_id_rna_tpm,i]+small_num))
-chip_dif = (log2(d_raw[used_id_rna_tpm,i]+small_num))
+rna_tpm_dif = scale(log2(rna_tpm[,i]+small_num))
+chip_dif = scale(log2(d_raw[,i]+small_num))
 dif_cor_1 = cor(rna_tpm_dif, chip_dif, method='pearson')
 dif_cor_2 = cor(rna_tpm_dif, chip_dif, method='spearman')
 plot(main=paste(m, ': pr: ', toString(round(dif_cor_1, digits=3)), '; sr: ', toString(round(dif_cor_2, digits=3)), sep=''), rna_tpm_dif, chip_dif, log='', xlim=c(lower_lim,upper_lim), ylim=c(lower_lim,upper_lim), pch=16)
@@ -118,8 +73,6 @@ abline(v=0, col='blue')
 }
 dev.off()
 }
-
-
 
 
 ###### get rna_dif vs chip-dif 6 plots
@@ -146,16 +99,13 @@ for (i in c(1:11)){
 			for (m in methods){
 				d_raw = read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)
 				d_raw_bg = read.table(paste('tss_h3k4me3.pcsorted.', m, '.1000kb.txt', sep=''), header=F)
-				#rna_tpm_dif = scale(log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
-				#chip_dif = scale(log2(d_raw[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
-				#chip_dif_bg = scale(log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
-				rna_tpm_dif = log2(rna_tpm[used_id_rna_tpm,i]+small_num)-log2(rna_tpm[used_id_rna_tpm,j]+small_num)
-				chip_dif = log2(d_raw[used_id_rna_tpm,i]+small_num)-log2(d_raw[used_id_rna_tpm,j]+small_num)
-				chip_dif_bg = log2(d_raw_bg[used_id_rna_tpm,i]+small_num)-log2(d_raw_bg[used_id_rna_tpm,j]+small_num)
+				rna_tpm_dif = scale(log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(rna_tpm[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
+				chip_dif = scale(log2(d_raw[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
+				chip_dif_bg = scale(log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,i]+small_num)-log2(d_raw_bg[rna_tpm_max>rna_tpm_max_lim,j]+small_num), center = FALSE)
 				dif_cor_1 = cor(rna_tpm_dif, chip_dif, method='pearson')
 				dif_cor_1_bg = cor(rna_tpm_dif, chip_dif_bg, method='pearson')
 				dif_cor_2 = cor(rna_tpm_dif, chip_dif, method='spearman')
-				plot(main=paste(m, ': pr: ', toString(round(dif_cor_1, digits=3)), '; sr: ', toString(round(dif_cor_2, digits=3)), sep=''), rna_tpm_dif, chip_dif, log='', xlim=c(-15,15), ylim=c(-15,15), pch=16)
+				plot(main=paste(m, ': pr: ', toString(round(dif_cor_1, digits=3)), '; sr: ', toString(round(dif_cor_2, digits=3)), sep=''), rna_tpm_dif, chip_dif, log='', xlim=c(-5,5), ylim=c(-5,5), pch=16)
 				z <- kde2d(rna_tpm_dif, chip_dif, n=20)
 				contour(z, drawlabels=FALSE, nlevels=k, col=my.cols, add=TRUE)
 				abline(0,1,col='red')
@@ -194,12 +144,6 @@ boxplot((as.matrix(cor_matrix)[,order(colMeans(cor_matrix))]), use.cols = TRUE, 
 axis(1, at=1:6, labels=methods[order(colMeans(cor_matrix))])
 dev.off()
 
-
-png('test_5.png')
-boxplot((as.matrix(cor_matrix[,-4])[,order(colMeans(cor_matrix[,-4]))]), use.cols = TRUE, xaxt='n')
-axis(1, at=1:5, labels=methods[-4][order(colMeans(cor_matrix[,-4]))])
-dev.off()
-
 ###### get rna_dif vs chip-dif boxplot 6 plots 
 ###### get table for ggplot
 cor_matrix_table = c()
@@ -214,12 +158,12 @@ for (i in c(1:dim(cor_matrix_bg)[2])){
 	cor_matrix_table=rbind(cor_matrix_table, cbind(cor_matrix_bg[,i], rep(paste(toString(i), '_', methods[i], ': ', toString(round(paired_t_statistic, digits=3)), sep=''), dim(cor_matrix)[1]), rep('1000kb',dim(cor_matrix)[1])  ))
 }
 
+
 cor_matrix_table = as.data.frame(cor_matrix_table)
 colnames(cor_matrix_table) = c('cor', 'method', 'fg_bg')
 cor_matrix_table[,1] = apply(cor_matrix_table, 1, function(x) x[1]=as.numeric(x[1]))
 
 png('test1.png', width=1200, height=800)
-par(mfrow=c(1,6))
 p = ggplot(data = cor_matrix_table, aes(x=method, y=cor)) 
 p = p + geom_boxplot(aes(fill = fg_bg))
 p = p + geom_point(aes(y=cor, group=fg_bg), position = position_dodge(width=0.75))
@@ -231,12 +175,6 @@ p = p + coord_cartesian(ylim = c(min(cor_matrix_table[,1]), max(cor_matrix_table
 p
 dev.off()
 
-library(mixtools)
-library(mclust)
-mixmdl2 = normalmixEM(log2(rna_tpm)[is.finite(log2(rna_tpm))], k=2)
-png('rna_tpm_hist.png')
-plot(mixmdl2, which=2)
-dev.off()
 
 
 
@@ -252,7 +190,7 @@ dev.off()
 
 
 
-'''
+
 
 methods = c('pknorm')
 for (m in methods){
@@ -314,7 +252,7 @@ my.cols <- rev(brewer.pal(k, "RdYlBu"))
 cor_dif_matrix = c()
 cor_dif_matrix_bg = c()
 cor_dif_matrix_shuffle = c()
-tpm_lim=5
+tpm_lim=2
 used_gene_number = c()
 count_id = 0
 cor_method = 'pearson'
@@ -337,9 +275,9 @@ for (m in methods){
 			chip_log2 = log2(d_raw[rna_tpm_pair>=tpm_lim,j]+add_small_num)
 			chip_log1_bg = log2(d_raw_bg[rna_tpm_pair>=tpm_lim,i]+add_small_num)
 			chip_log2_bg = log2(d_raw_bg[rna_tpm_pair>=tpm_lim,j]+add_small_num)
-			rna_dif = scale(rna_log1-rna_log2, center = FALSE)
-			chip_dif = scale(chip_log1-chip_log2, center = FALSE)
-			chip_dif_bg = scale(chip_log1_bg-chip_log2_bg, center = FALSE)
+			rna_dif = (rna_log1-rna_log2)
+			chip_dif = (chip_log1-chip_log2)
+			chip_dif_bg = (chip_log1_bg-chip_log2_bg)
 			cor_dif = cor(rna_dif, chip_dif, method=cor_method)
 			count_id = count_id+1
 			used_gene_number[count_id] = sum(rna_tpm_pair>=tpm_lim)
@@ -443,5 +381,3 @@ cbind(id,cor_dif_matrix[,2]-apply(cor_dif_matrix, 1, max))[order(cor_dif_matrix[
 
 apply(cor_dif_matrix, 1, max)
 
-
-'''

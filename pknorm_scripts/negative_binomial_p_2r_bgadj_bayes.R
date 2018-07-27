@@ -108,7 +108,11 @@ get_pval_pre = function(N, l, sig_0_size, sig_0_prob, num_0){
 }
 
 get_pval = function(N, l, sig_0_size, sig_0_prob, num_0){
-	pval_new = pnbinom(N, sig_0_size, sig_0_prob, lower.tail=FALSE) / pnbinom(0, sig_0_size, sig_0_prob, lower.tail=FALSE) * (l-num_0)/l
+	if (N != 0){
+		pval_new = pnbinom(N-1, sig_0_size, sig_0_prob, lower.tail=FALSE) / pnbinom(0, sig_0_size, sig_0_prob, lower.tail=FALSE) * (l-num_0)/l
+	} else {
+		pval_new = 1.0
+	}
 	#pval_new[pval_new>1] = 1
 	return(pval_new)
 }
