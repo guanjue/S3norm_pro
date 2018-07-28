@@ -320,7 +320,7 @@ print(cbg_mean)
 all_mean = c(mean(sig1_z), mean(sig2_z))
 print(all_mean)
 png(paste(output_name, sig_matrix_colnames[dim(sig_matrix)[2]], '.scatter.png', sep=''))
-plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 15)
+plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 5)
 dev.off()
 
 
