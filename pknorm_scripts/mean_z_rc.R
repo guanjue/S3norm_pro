@@ -5,7 +5,8 @@ args = commandArgs(trailingOnly=TRUE)
 
 cell_marker = args[1]
 tail = args[2]
-input_folder = args[3]
+ctrl = args[3]
+input_folder = args[4]
 ### extract filenames of the cell marker
 file_list = list.files(input_folder, pattern=paste('^', cell_marker, '(.*)', tail, '$', sep='') )
 print(file_list)
@@ -17,6 +18,9 @@ for (file in file_list){
 }
 
 mean_sig = apply(data_matrix, 1, mean)
+
+ctrl_sig = read.table(ctrl, header = F)
+mean_sig = mean_sig / ctrl
 
 ### write output
 write.table(mean_sig, paste(cell_marker, '.mean_sig.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
