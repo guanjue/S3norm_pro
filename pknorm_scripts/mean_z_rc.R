@@ -20,7 +20,7 @@ for (file in file_list){
 mean_sig = apply(data_matrix, 1, mean)
 
 ctrl_sig = read.table(paste(input_folder, ctrl, sep=''), header = F)
-mean_sig = mean_sig / ctrl
+mean_sig = (mean_sig+0.1) / (ctrl+0.1)
 
 ### write output
 write.table(mean_sig, paste(cell_marker, '.mean_sig.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
