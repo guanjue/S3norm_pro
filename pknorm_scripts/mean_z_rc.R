@@ -19,7 +19,7 @@ for (file in file_list){
 
 mean_sig = apply(data_matrix, 1, mean)
 
-ctrl_sig = read.table(ctrl, header = F)
+ctrl_sig = read.table(paste(input_folder, ctrl, sep=''), header = F)
 mean_sig = mean_sig / ctrl
 
 ### write output
