@@ -24,8 +24,8 @@ z_sig = (mean_sig-mean(mean_sig))/sd(mean_sig)
 write.table(mean_sig, paste(cell_marker, '.mean_sig_z.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
 
 ### write FRiP & SNRs
-pk_sig = mean_sig[p.adjust(pnorm(-z),'fdr')<0.05]
-bg_sig = mean_sig[p.adjust(pnorm(-z),'fdr')>=0.05]
+pk_sig = mean_sig[p.adjust(pnorm(-z_sig),'fdr')<0.05]
+bg_sig = mean_sig[p.adjust(pnorm(-z_sig),'fdr')>=0.05]
 FRiP = sum(pk_sig) / sum(bg_sig)
 SNR = mean(pk_sig) / mean(bg_sig)
 
