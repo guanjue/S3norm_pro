@@ -166,17 +166,17 @@ plot_scatterplot_3parts = function(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, r
 
 ### read data
 sig1 = scan(sig1_raw)
-
+sig1[sig1>upplim] = upplim
 sig2_r = scan(sig2_raw)
 sig2_r[sig2_r>upplim] = upplim
 sig2_tr = scan(sig2_TRnorm)
 sig2_tr[sig2_tr>upplim] = upplim
 sig2_ma = scan(sig2_MAnorm)
-sig2_MAnorm[sig2_MAnorm>upplim] = upplim
+sig2_ma[sig2_ma>upplim] = upplim
 sig2_qt = scan(sig2_QTnorm)
-sig2_QTnorm[sig2_QTnorm>upplim] = upplim
+sig2_qt[sig2_qt>upplim] = upplim
 sig2_pk = scan(sig2_PKnorm)
-sig2_PKnorm[sig2_PKnorm>upplim] = upplim
+sig2_pk[sig2_pk>upplim] = upplim
 sig1_z = scan(sig1_Znorm)
 #sig1_Znorm[sig1_Znorm>upplim] = upplim
 sig2_z = scan(sig2_Znorm)
