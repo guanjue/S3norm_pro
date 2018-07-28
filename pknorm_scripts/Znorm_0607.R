@@ -2,7 +2,7 @@ args = commandArgs(trailingOnly=TRUE)
 input_sig1 = args[1]
 output = args[2]
 
-small_num = 1
+small_num = 0.1
 random_sample_num = 1000000
 upperlim = 1000
 lowerlim = 0
