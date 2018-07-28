@@ -24,7 +24,7 @@ method=args[11]
 
 bed_file=args[12]
 
-
+upplim = as.numeric(args[13])
 
 #sig1_raw = 'ERY_ad.ctcfrep.fisher_p.txt'
 #sig2_raw = 'T_CD8_SPL.ctcfrep.fisher_p.txt'
@@ -168,12 +168,19 @@ plot_scatterplot_3parts = function(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, r
 sig1 = scan(sig1_raw)
 
 sig2_r = scan(sig2_raw)
+sig2_r[sig2_r>upplim] = upplim
 sig2_tr = scan(sig2_TRnorm)
+sig2_tr[sig2_tr>upplim] = upplim
 sig2_ma = scan(sig2_MAnorm)
+sig2_MAnorm[sig2_MAnorm>upplim] = upplim
 sig2_qt = scan(sig2_QTnorm)
+sig2_QTnorm[sig2_QTnorm>upplim] = upplim
 sig2_pk = scan(sig2_PKnorm)
+sig2_PKnorm[sig2_PKnorm>upplim] = upplim
 sig1_z = scan(sig1_Znorm)
+#sig1_Znorm[sig1_Znorm>upplim] = upplim
 sig2_z = scan(sig2_Znorm)
+#sig2_Znorm[sig2_Znorm>upplim] = upplim
 
 sig_matrix = as.matrix(cbind(sig1, sig2_r, sig2_tr, sig2_ma, sig2_qt, sig2_pk, sig1_z, sig2_z))
 sig_matrix_colnames = c('sig1', 'sig2_r', 'sig2_tr', 'sig2_ma', 'sig2_qt', 'sig2_pk', 'sig1_z', 'sig2_z')
