@@ -17,9 +17,13 @@ for (file in file_list){
 	data_matrix = cbind(data_matrix, d[,])
 }
 
-mean_sig = apply(data_matrix, 1, mean)
+if (dim(data_matrix)[2]>1){
+	mean_sig = apply(data_matrix, 1, mean)
+} else {
+	mean_sig = data_matrix
+}
 
-ctrl_sig = read.table(paste(input_folder, ctrl, sep=''), header = F)
+ctrl_sig = as.matrix(read.table(paste(input_folder, ctrl, sep=''), header = F))
 mean_sig = (mean_sig+0.1) / (ctrl_sig+0.1)
 
 ### write output
