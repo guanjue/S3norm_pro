@@ -231,7 +231,7 @@ for ( i in c(1:(dim(sig_matrix)[2]-2))){
 	frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
 	mean_pk = mean(sig_tmp[pk_id_tmp])
 	mean_bg = mean(sig_tmp[bg_id_tmp])
-	snr_tmp = mean_pk / mean_bg
+	snr_tmp = (mean_pk+1) / (mean_bg+1)
 	pk_num_tmp = sum(pk_id_tmp)
 	ari_tmp = adjustedRandIndex(sig1_pk_id, pk_id_tmp)
 	ji_tmp = jaccard_index(sig1_pk_id, pk_id_tmp)
@@ -257,9 +257,9 @@ for ( i in c(1:(dim(sig_matrix)[2]-2))){
 	all_mean = c(log10(mean(sig1)+0.1), log10(mean(sig_tmp)+0.1))
 	cpk_mean = c(log10(mean(sig1[cpk])+0.1), log10(mean(sig_tmp[cpk])+0.1))
 	cbg_mean = c(log10(mean(sig1[cbg])+0.1), log10(mean(sig_tmp[cbg])+0.1))
-	png(paste(output_name, sig_matrix_colnames[i], '.scatter.png', sep=''))
-	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -1.1, 2.2)
-	dev.off()
+	#png(paste(output_name, sig_matrix_colnames[i], '.scatter.png', sep=''))
+	#plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -1.1, 2.2)
+	#dev.off()
 }
 
 ### sig1z
@@ -326,9 +326,9 @@ print(cpk_mean)
 print(cbg_mean)
 all_mean = c(mean(sig1_z), mean(sig2_z))
 print(all_mean)
-png(paste(output_name, sig_matrix_colnames[dim(sig_matrix)[2]], '.scatter.png', sep=''))
-plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 7)
-dev.off()
+#png(paste(output_name, sig_matrix_colnames[dim(sig_matrix)[2]], '.scatter.png', sep=''))
+#plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -2, 7)
+#dev.off()
 
 
 
