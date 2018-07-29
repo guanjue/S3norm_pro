@@ -322,7 +322,7 @@ if (sum(ref_pk_id)<10000){
 }
 tar_sig_p = sig_matrix_p[,dim(sig_matrix_p)[2]-1]
 tar_pk_id = tar_sig_p < fdr_thresh
-if (sum(ref_pk_id)<10000){
+if (sum(tar_pk_id)<10000){
 	tar_lim = sort(tar_sig_p)[10000]
 	tar_pk_id = tar_sig_p < tar_lim
 }
