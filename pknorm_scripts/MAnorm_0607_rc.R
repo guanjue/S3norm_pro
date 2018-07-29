@@ -51,17 +51,21 @@ lowerlim = 0
 ct = unlist(strsplit(input_sig2, "[.]"))[1]
 
 sig1 = scan(input_sig1)
+sig1_log = log2(sig1+0.1)
+sig1z = (sig1_log-mean(sig1_log))/sd(sig1_log)
 sig2 = scan(input_sig2)
+sig2_log = log2(sig2+0.1)
+sig2z = (sig2_log-mean(sig2_log))/sd(sig2_log)
 totalmean_sf = sum(sig1) / sum(sig2)
 sig3 = (sig2) * totalmean_sf #- small_num
-sig4 = scale(sig2) #- small_num
+#sig4 = scale(sig2) #- small_num
 
 
 #sig1_binary = get_nbp(sig1) <= 0.001
 #sig2_binary = get_nbp(sig2) <= 0.001
 
-sig1_binary = p.adjust(10^(-sig1),'fdr') <= 0.05
-sig2_binary = p.adjust(10^(-sig2),'fdr') <= 0.05
+sig1_binary = p.adjust(pnorm(-sig1z),'fdr') <= 0.05
+sig2_binary = p.adjust(pnorm(-sig2z),'fdr') <= 0.05
 
 peak_binary_pk = as.logical(sig1_binary * sig2_binary) 
 peak_binary = peak_binary_pk & (sig1 != sig1[1]) & (sig2 != sig2[1])
@@ -93,7 +97,7 @@ sig2_rescaled = 2^log2_allregion_count_read2_rescaled - small_num
 #write.table(info, paste(output, '.MA.norm.info.txt', sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 write.table(sig2_rescaled, paste(output,".manorm.txt", sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 write.table(sig3, paste(output,".trnorm.txt", sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
-write.table(sig4, paste(output,".znorm.txt", sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
+write.table(sig2z, paste(output,".znorm.txt", sep=''),sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 
 
 
