@@ -62,12 +62,12 @@ sig4 = scale(sig2) #- small_num
 
 sig1_binary = p.adjust(10^(-sig1),'fdr') < 0.05
 if (sum(sig1_binary)<10000){
-	pk1_lim = sort(a)[length(sig1)-10000]
+	pk1_lim = sort(sig2)[length(sig1)-10000]
 	sig1_binary = sig1 >= pk1_lim
 }
 sig2_binary = p.adjust(10^(-sig2),'fdr') < 0.05
 if (sum(sig2_binary)<10000){
-	pk2_lim = sort(a)[length(sig2)-10000]
+	pk2_lim = sort(sig2)[length(sig2)-10000]
 	sig2_binary = sig2 >= pk2_lim
 }
 

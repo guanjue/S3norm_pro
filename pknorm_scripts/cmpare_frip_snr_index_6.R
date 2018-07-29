@@ -308,8 +308,18 @@ frip_common_all = cbind(frip_common_all, frip_common_tmp)
 
 
 ### plot
-ref_pk_id = sig_matrix_p[,dim(sig_matrix_p)[2]]<fdr_thresh
-tar_pk_id = sig_matrix_p[,dim(sig_matrix_p)[2]-1]<fdr_thresh
+ref_sig_p = sig_matrix_p[,dim(sig_matrix_p)[2]]
+ref_pk_id = ref_sig_p < fdr_thresh
+if (sum(ref_pk_id)<10000){
+	ref_lim = sort(ref_sig_p)[10000]
+	ref_pk_id = ref_sig_p < ref_lim
+}
+tar_sig_p = sig_matrix_p[,dim(sig_matrix_p)[2]-1]
+tar_pk_id = tar_sig_p < fdr_thresh
+if (sum(ref_pk_id)<10000){
+	tar_lim = sort(tar_sig_p)[10000]
+	tar_pk_id = tar_sig_p < tar_lim
+}
 cpk = (ref_pk_id * tar_pk_id) == 1
 cbg = (ref_pk_id + tar_pk_id) == 0
 ref_all_s = sig1_z[sample_id]
