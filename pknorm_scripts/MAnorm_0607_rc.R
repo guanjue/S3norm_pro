@@ -64,8 +64,16 @@ sig3 = (sig2) * totalmean_sf #- small_num
 #sig1_binary = get_nbp(sig1) <= 0.001
 #sig2_binary = get_nbp(sig2) <= 0.001
 
-sig1_binary = p.adjust(pnorm(-sig1z),'fdr') <= 0.05
-sig2_binary = p.adjust(pnorm(-sig2z),'fdr') <= 0.05
+sig1_binary = p.adjust(pnorm(-sig1z),'fdr') < 0.05
+if (sum(sig1_binary)<10000){
+	pk1_lim = sort(a)[length(sig1)-10000]
+	sig1_binary = sig1 >= pk1_lim
+}
+sig2_binary = p.adjust(pnorm(-sig2z),'fdr') < 0.05
+if (sum(sig2_binary)<10000){
+	pk2_lim = sort(a)[length(sig2)-10000]
+	sig2_binary = sig2 >= pk2_lim
+}
 
 peak_binary_pk = as.logical(sig1_binary * sig2_binary) 
 peak_binary = peak_binary_pk & (sig1 != sig1[1]) & (sig2 != sig2[1])
