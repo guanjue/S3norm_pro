@@ -8,8 +8,8 @@ input_folder = args[4]
 output_name = args[5]
 
 
-get_poisson_pval = function(sig, input){
-	pval = ppois(sig, lambda = input, lower.tail = FALSE), lower.tail=FALSE)
+get_poisson_pval = function(x){
+	pval = ppois(x[1], lambda = x[2], lower.tail = FALSE), lower.tail=FALSE)
 	return(pval)
 }
 
@@ -33,7 +33,7 @@ input_od[input_od<sig_mean] = sig_mean
 
 ### get poisson p-value 1st round
 sig_input = cbind(sig_od, input_od)
-poisson_pval = apply(sig_input, MARGIN=1, function(x) get_poisson_pval(x[1], x[2]) )
+poisson_pval = apply(sig_input, MARGIN=1, function(x) get_poisson_pval(x) )
 
 ### get -log10(p-value)
 poisson_pval[poisson_pval<=1e-324] = 1e-324
