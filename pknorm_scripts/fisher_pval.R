@@ -7,6 +7,7 @@ cell_marker = args[1]
 tail = args[2]
 input_folder = args[3]
 siglim = as.numeric(args[4])
+output = args[5]
 ### extract filenames of the cell marker
 file_list = list.files(input_folder, pattern=paste('^', cell_marker, '(.*)', tail, '$', sep='') )
 print(file_list)
@@ -14,10 +15,13 @@ print(file_list)
 data_matrix = NULL
 for (file in file_list){
 	d = read.table(paste(input_folder, file, sep=''), header = F)
+	d[d>308] = 308
+	d[d<0] = 0
 	data_matrix = cbind(data_matrix, d[,])
 }
 ### get fisher method combined p-value
 get_fisher_p = function(x){
+	#print(x)
 	if (length(x)!=1){
 		x_p = 10^(-x)
 		fp = sumlog(x_p)$p
@@ -38,7 +42,7 @@ get_fisher_p = function(x){
 fisher_p = apply(data_matrix, 1, function(x) get_fisher_p(x))
 
 ### write output
-write.table(fisher_p, paste(cell_marker, '.fisher_p.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
+write.table(fisher_p, paste(output, '.fisher_p.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
 
 ### write FRiP & SNRs
 pk_sig = fisher_p[fisher_p>-log10(0.001)]
@@ -46,5 +50,5 @@ bg_sig = fisher_p[fisher_p<=-log10(0.001)]
 FRiP = sum(pk_sig) / sum(bg_sig)
 SNR = mean(pk_sig) / mean(bg_sig)
 
-write.table(c(FRiP, SNR), paste(cell_marker, '.fisher_p.frip_snr.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
+write.table(c(FRiP, SNR), paste(output, '.fisher_p.frip_snr.txt', sep=''), quote=FALSE, col.names=FALSE, row.names=FALSE, sep='\t')
 
