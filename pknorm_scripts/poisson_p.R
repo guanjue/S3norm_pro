@@ -9,7 +9,7 @@ output_name = args[5]
 
 
 get_poisson_pval = function(x){
-	pval = ppois(x[1], lambda = x[2], lower.tail = FALSE), lower.tail=FALSE)
+	pval = ppois(x[1], lambda = x[2], lower.tail=FALSE)
 	return(pval)
 }
 
