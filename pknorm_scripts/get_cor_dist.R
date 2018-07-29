@@ -12,9 +12,9 @@ total_rpk = colSums(data0[,-1])
 rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*10000000))
 rna_tpm_max = apply(rna_tpm, 1, max)
 tpm_lim=5
-sd_mean_lim = 0.2
+sd_mean_lim = 1
 non0_count_lim = 4
-png('hist_rna_tpm_max.png')
+pdf('hist_rna_tpm_max.pdf')
 hist(log2(rna_tpm_max), breaks=50)
 abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
 dev.off()
@@ -26,27 +26,28 @@ rna_tpm_non0_num = apply(rna_tpm, 1, function(x) sum(x!=0))
 rna_tpm_cv = apply(rna_tpm, 1, function(x) (sd(x+1))/mean(x+1))
 
 #used_id_rna_tpm = ( (rna_tpm_max>=tpm_lim) * (rna_tpm_non0_num>=non0_count_lim) * (rna_tpm_cv>sd_mean_lim)) >0
-used_id_rna_tpm = (  (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
+used_id_rna_tpm = ( (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
 #used_id_rna_tpm = ( (rna_tpm_cv>sd_mean_lim) * (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
 #used_id_rna_tpm = ( (rna_tpm_max>tpm_lim)  ) >0
 #used_id_rna_tpm = ( (rna_tpm_max>-1000)  ) >0
 print(sum(used_id_rna_tpm))
 
-png('hist_tpm_cv.png', width=1200, height=400)
-par(mfrow=c(1,3))
-hist(log2(rna_tpm+0.01), breaks=50)
-abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
-box()
-hist(rna_tpm_non0_num, breaks=50)
-abline(v=non0_count_lim, col='red', lwd=1.5, lty=3)
-box()
+#pdf('hist_tpm_cv.pdf', width=1200, height=400)
+pdf('hist_tpm_cv.pdf')
+#par(mfrow=c(1,3))
+#hist(log2(rna_tpm+0.01), breaks=50)
+#abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
+#box()
+#hist(rna_tpm_non0_num, breaks=50)
+#abline(v=non0_count_lim, col='red', lwd=1.5, lty=3)
+#box()
 hist(rna_tpm_cv, breaks=50)
 abline(v=sd_mean_lim, col='red', lwd=1.5, lty=3)
 box()
 dev.off()
 
 ###### get cross cell type correlation
-methods = c('raw', 'trnorm', 'manorm', 'znorm', 'qtnorm', 'pknorm')
+methods = c('rcnorm', 'rcznorm', 'raw', 'znorm', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
 cor_0_matrix = c()
 cor_0_shuffle_matrix = c()
 paired_t_statistic_vec = c()
@@ -66,7 +67,7 @@ for (m in methods){
 	d_raw_shuffle = t(apply(d_raw, 1, function(x) x[sample(dim(rna_tpm)[2],dim(rna_tpm)[2])]))
 	cor_0_shuffle = apply(cbind(rna_tpm, d_raw_shuffle)[used_id_rna_tpm,], 1, function(x) cor(scale(x[1:11]+small_num),scale(x[12:22]+small_num), method=cor_method))
 	d_raw_bg = read.table(paste('tss_h3k4me3.pcsorted.', m, '.1000kb.txt', sep=''), header=F)
-	cor_0_bg = apply(cbind(rna_tpm, d_raw_bg)[used_id_rna_tpm,], 1, function(x) cor(log2(x[1:11]+small_num),log2(x[12:22]+small_num), method=cor_method))
+	cor_0_bg = apply(cbind(rna_tpm, d_raw_bg)[used_id_rna_tpm,], 1, function(x) cor(scale(x[1:11]+small_num),scale(x[12:22]+small_num), method=cor_method))
 	kl_dist_bg = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_bg[!is.na(cor_0_bg)], bw=bw_used)$y)$D2
 	kl_dist_shuffle = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_shuffle[!is.na(cor_0_shuffle)], bw=bw_used)$y)$D2
 	paired_t = t.test(cor_0, cor_0_shuffle, paired=TRUE, alternative = 'greater')
@@ -85,8 +86,9 @@ for (m in methods){
 	kl_dist_vec = cbind(kl_dist_vec, kl_dist_shuffle)
 }
 
-png('cor_0_KL-dist.png', width=1200, height=800)
-barplot(kl_dist_vec[,c(1,2,3,4,5,6)], main="KL-dist", xlab="Methods", names.arg=c('Raw', 'TSnorm', 'MAnorm', 'Zscore', 'QTnorm', 'PKnorm'))
+pdf('cor_0_KL-dist.pdf', width=12, height=9)
+barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'NBP', 'NBP-Z', 'NBP-TS-norm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
+#box()
 dev.off()
 
 
