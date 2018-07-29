@@ -226,8 +226,14 @@ for ( i in c(1:(dim(sig_matrix)[2]-2))){
 	nbp_tmp = sig_matrix_p[,i]
 	sig_tmp = sig_matrix[,i]
 	pk_id_tmp = nbp_tmp<fdr_thresh
+	if (sum(pk_id_tmp)<10000){
+		pk_lim = sort(nbp_tmp)[10000]
+		pk_id_tmp = nbp_tmp < pk_lim
+		bg_id_tmp = nbp_tmp >= pk_lim
+	} else {
+		bg_id_tmp = nbp_tmp>=fdr_thresh
+	}
 	sig1_pk_all = cbind(sig1_pk_all, pk_id_tmp)
-	bg_id_tmp = nbp_tmp>=fdr_thresh
 	frip_tmp = sum(sig_tmp[pk_id_tmp]) / sum(sig_tmp)
 	mean_pk = mean(sig_tmp[pk_id_tmp])
 	mean_bg = mean(sig_tmp[bg_id_tmp])
