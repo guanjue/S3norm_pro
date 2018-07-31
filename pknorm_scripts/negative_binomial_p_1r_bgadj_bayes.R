@@ -185,6 +185,7 @@ print(var(nb_v_Test))
 bin_num = dim(sig)[1]
 
 ### get negative binomial p-value 1st round
+sig_input = cbind(sig, input)
 nb_pval = apply(sig, MARGIN=1, function(x) get_pval(x[1], bin_num, sig_0_size * (x[2]+1)/(input_0_mean+1), sig_0_prob, obs_0_num) )
 
 ### get -log10(p-value)
