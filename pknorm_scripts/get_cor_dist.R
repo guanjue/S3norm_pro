@@ -54,7 +54,7 @@ cor_0_shuffle_matrix = c()
 paired_t_statistic_vec = c()
 kl_dist_vec = c()
 
-rna_tpm = (rna_tpm - mean(rna_tpm)) / sd(rna_tpm)
+#rna_tpm = (rna_tpm - mean(rna_tpm)) / sd(rna_tpm)
 
 
 for (m in methods){
@@ -65,7 +65,7 @@ for (m in methods){
 	small_num = 0.0
 	#shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
 	d_raw = as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F))
-	d_raw = (d_raw - mean(d_raw)) / sd(d_raw)
+	#d_raw = (d_raw - mean(d_raw)) / sd(d_raw)
 
 	cor_0 = apply(cbind(rna_tpm, d_raw)[used_id_rna_tpm,], 1, function(x) cor((x[1:11]+small_num),(x[12:22]+small_num), method=cor_method))
 	shuffle_id = sample(dim(rna_tpm)[2],dim(rna_tpm)[2])
