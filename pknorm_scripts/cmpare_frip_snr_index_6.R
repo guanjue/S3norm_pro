@@ -252,19 +252,19 @@ for ( i in c(1:(dim(sig_matrix)[2]-2))){
 	### plotting
 	cpk = (sig1_pk_id * pk_id_tmp) == 1
 	cbg = (sig1_pk_id + pk_id_tmp) == 0
-	ref_all_s = log10(sig1[sample_id]+0.1)
-	tar_all_s = log10(sig_tmp[sample_id]+0.1)
+	ref_all_s = log2(sig1[sample_id]+0.1)
+	tar_all_s = log2(sig_tmp[sample_id]+0.1)
 	cpk_s = cpk[sample_id]
 	cbg_s = cbg[sample_id]
 	ref_cpk_s = ref_all_s[cpk_s]
 	tar_cpk_s = tar_all_s[cpk_s]
 	ref_cbg_s = ref_all_s[cbg_s]
 	tar_cbg_s = tar_all_s[cbg_s]
-	all_mean = c(log10(mean(sig1)+0.1), log10(mean(sig_tmp)+0.1))
-	cpk_mean = c(log10(mean(sig1[cpk])+0.1), log10(mean(sig_tmp[cpk])+0.1))
-	cbg_mean = c(log10(mean(sig1[cbg])+0.1), log10(mean(sig_tmp[cbg])+0.1))
+	all_mean = c(log2(mean(sig1)+0.1), log2(mean(sig_tmp)+0.1))
+	cpk_mean = c(log2(mean(sig1[cpk])+0.1), log2(mean(sig_tmp[cpk])+0.1))
+	cbg_mean = c(log2(mean(sig1[cbg])+0.1), log2(mean(sig_tmp[cbg])+0.1))
 	png(paste(output_name, sig_matrix_colnames[i], '.scatter.png', sep=''))
-	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -1.1, 2.2)
+	plot_scatterplot_3parts(ref_all_s, tar_all_s, ref_cpk_s, tar_cpk_s, ref_cbg_s, tar_cbg_s, cpk_mean, cbg_mean, all_mean, -5, 5)
 	dev.off()
 }
 
