@@ -118,8 +118,8 @@ get_pval = function(N, l, sig_0_size, sig_0_prob, num_0){
 }
 
 ### read data
-sig = read.table(paste(signal_folder, signal_track_file, sep=''), header = F)
-input = read.table(paste(input_folder, input_track_file, sep=''), header = F)
+sig = scan(paste(signal_folder, signal_track_file, sep=''))
+input = scan(paste(input_folder, input_track_file, sep=''))
 
 #####################################################################################################################
 #####################################################################################################################
@@ -127,7 +127,7 @@ input = read.table(paste(input_folder, input_track_file, sep=''), header = F)
 ### get sig bg regions no bgs
 thresh = 0
 
-sig_0 = sig[,1]
+sig_0 = sig
 #sig_0 = sig_0[sig_0>thresh]
 obs_0_num = sum(sig_0==thresh)
 sig_0_mean = mean(sig_0)
@@ -159,7 +159,7 @@ p0 = sig_0_probT_sizeT[3]
 sig_0_size = sig_0_probT_sizeT[2]
 
 ### get input bg regions
-input_0 = input[,1]
+input_0 = input
 #input_bg_non0 = input_bg[input_bg>thesh]
 input_0_mean = mean(input_0)
 input_0_var = var(input_0)
@@ -177,12 +177,8 @@ print('check NB distribution: ')
 print(sig_0_size)
 print(sig_0_prob)
 print(p0)
-nb_v_Test = rnbinom(1e+4, sig_0_size, sig_0_prob)
-print(mean(nb_v_Test))
-print(var(nb_v_Test))
 
-
-bin_num = dim(sig)[1]
+bin_num = length(sig)
 
 ### get negative binomial p-value 1st round
 sig_input = cbind(sig, input)
