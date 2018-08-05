@@ -5,12 +5,16 @@ library(ggplot2)
 library(ggpubr)
 
 data0 =read.table('rna_rpk.pcsorted.txt', header=F)
+#data01 =read.table('rna_rpk.pcsorted.qtnorm.txt', header=F)
+
 #data0 =read.table('rna_rpk.pcsorted.all12.txt', header=F)
 
 total_rpk = colSums(data0[,-1])
 
 rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*10000000))
+
 rna_tpm_max = apply(rna_tpm, 1, max)
+rna_tpm_mean = apply(rna_tpm, 1, mean)
 tpm_lim=5
 sd_mean_lim = 1
 non0_count_lim = 4
@@ -19,6 +23,29 @@ hist(log2(rna_tpm_max), breaks=50)
 abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
 dev.off()
 
+rna_tpm_binary = (rna_tpm>tpm_lim)*1
+rna_tpm_binary_count = colSums(rna_tpm_binary)
+
+ct_list = c('CFU_E_ad', 'CMP', 'ERY_ad', 'GMP', 'MK_imm_ad', 'LSK_BM', 'MEP', 'MONO_BM', 'NEU', 'ER4', 'G1E')
+ct_new_order = c(6,2,7,11,10,1,3,5,4,8,7)
+ct_list_reorder = ct_list[ct_new_order]
+
+png('rna_pk_count.png')
+plot(c(1:length(rna_tpm_binary_count)), as.numeric(rna_tpm_binary_count)[ct_new_order], xaxt = 'n')
+axis(1, at=c(1:length(rna_tpm_binary_count)), labels = FALSE)
+text(c(1:length(rna_tpm_binary_count)), par("usr")[3], labels = ct_list_reorder, srt = 45, pos = 1, xpd = TRUE)
+dev.off()
+
+
+
+
+tpm_lim_mean = 3
+pdf('hist_rna_tpm_mean.pdf')
+hist(log2(rna_tpm_mean), breaks=50)
+abline(v=tpm_lim_mean, col='red', lwd=1.5, lty=3)
+dev.off()
+
+
 rna_tpm_min = apply(rna_tpm, 1, min)
 rna_tpm_min = apply(rna_tpm, 1, min)
 
@@ -26,9 +53,9 @@ rna_tpm_non0_num = apply(rna_tpm, 1, function(x) sum(x!=0))
 rna_tpm_cv = apply(rna_tpm, 1, function(x) (sd(x+1))/mean(x+1))
 
 #used_id_rna_tpm = ( (rna_tpm_max>=tpm_lim) * (rna_tpm_non0_num>=non0_count_lim) * (rna_tpm_cv>sd_mean_lim)) >0
-used_id_rna_tpm = ( (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
+#used_id_rna_tpm = ( (log2(rna_tpm_mean+0.01)>tpm_lim_mean) * (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
 #used_id_rna_tpm = ( (rna_tpm_cv>sd_mean_lim) * (log2(rna_tpm_max+0.01)>tpm_lim) ) >0
-#used_id_rna_tpm = ( (rna_tpm_max>tpm_lim)  ) >0
+used_id_rna_tpm = ( (log2(rna_tpm_max+0.1)>tpm_lim)  ) >0
 #used_id_rna_tpm = ( (rna_tpm_max>-1000)  ) >0
 print(sum(used_id_rna_tpm))
 
@@ -48,32 +75,46 @@ dev.off()
 
 ###### get cross cell type correlation
 #methods = c('rcnorm', 'rcznorm', 'rctrnorm', 'rcqtnorm', 'rcmanorm', 'poisnorm', 'raw', 'znorm', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
-methods = c('rcnorm', 'rctrnorm', 'rcqtnorm', 'rcmanorm', 'poisnorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
+methods = c('rcnorm', 'poisnorm', 'rcznorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
+#methods = c('rcnorm', 'poisnorm', 'rcznorm', 'poisnorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
 
 #methods = c('rcnorm', 'rcznorm', 'raw', 'znorm', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
+
+small_num = 0.1
+
+
+rna_tpm = as.matrix(log10(rna_tpm+small_num))
+rna_tpm = (rna_tpm-mean(rna_tpm))/sd(rna_tpm)
+#rna_tpm = scale(rna_tpm)
+#rna_tpm = log2(rna_tpm+0.01)
+print(summary(rna_tpm))
+
+
+
 cor_0_matrix = c()
 cor_0_shuffle_matrix = c()
 paired_t_statistic_vec = c()
 kl_dist_vec = c()
 
-rna_tpm = (log2(rna_tpm+0.01) - mean(log2(rna_tpm+0.01))) / sd(log2(rna_tpm+0.01))
-#rna_tpm = log2(rna_tpm+0.01)
-print(summary(rna_tpm))
-
-
+set.seed(2018)
 for (m in methods){
 	print(m)
 	set.seed(1)
 	bw_used = 0.1
 	cor_method = 'pearson'
-	small_num = 0.0
+	#small_num = 0.1
 	#shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
-	d_raw = as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F))
+	if (m!='rcznorm'){
+		d_raw = (as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F))+small_num)
+		d_raw = ((d_raw) - mean((d_raw))) / sd((d_raw))
+	} else {
+		d_raw = (as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)))
+	}
 	print(summary(d_raw))
-	d_raw = ((d_raw+small_num) - mean((d_raw+small_num))) / sd((d_raw+small_num))
+	
 	#d_raw = log2(d_raw+small_num)
-
-	cor_0 = apply(cbind(rna_tpm, d_raw)[used_id_rna_tpm,], 1, function(x) cor((x[1:11]),(x[12:22]), method=cor_method))
+	sig_mat = cbind(rna_tpm, d_raw)[used_id_rna_tpm,]
+	cor_0 = apply(sig_mat, 1, function(x) cor((x[1:11]),(x[12:22]), method=cor_method))
 	shuffle_id = sample(dim(rna_tpm)[2],dim(rna_tpm)[2])
 	#d_raw_shuffle = d_raw[,shuffle_id]
 	d_raw_shuffle = t(apply(d_raw, 1, function(x) x[sample(dim(rna_tpm)[2],dim(rna_tpm)[2])]))
@@ -84,6 +125,7 @@ for (m in methods){
 	kl_dist_shuffle = kl.dist(density(cor_0[!is.na(cor_0)], bw=bw_used)$y, density(cor_0_shuffle[!is.na(cor_0_shuffle)], bw=bw_used)$y)$D2
 	paired_t = t.test(cor_0, cor_0_shuffle, paired=TRUE, alternative = 'greater')
 	paired_t_statistic = paired_t$statistic	
+	print(summary(cor_0[!is.na(cor_0)]))
 	png(paste('tss_h3k4me3.pcsorted.', m, '.png', sep=''))
 	plot(density(cor_0[!is.na(cor_0)], bw=bw_used), col='green', main=paste('Paired-t-test-statistic = ', toString(round(paired_t_statistic, digits=3)), '; ', 'KL-dist = ', toString(round(kl_dist_shuffle, digits=3)), sep=''), ylim=c(0,1.5))
 	print(mean(cor_0[!is.na(cor_0)]))
@@ -98,9 +140,14 @@ for (m in methods){
 	kl_dist_vec = cbind(kl_dist_vec, kl_dist_shuffle)
 }
 
+hist(rna_tpm[cor_0>0.5,])
+
+hist(rna_tpm)
+
+
 pdf('cor_0_KL-dist.pdf', width=20, height=9)
 #barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8,9,10,11,12)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'RC-TSnorm', 'RC-QTnorm', 'RC-MAnorm', 'POISP', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
-barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8,9,10)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-TSnorm', 'RC-QTnorm', 'RC-MAnorm', 'POISP', 'NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
+barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'POISP', 'RC-Z', 'NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 
 #barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 #box()
@@ -108,32 +155,122 @@ dev.off()
 
 pdf('cor_0_paired_t_statistic_vec.pdf', width=20, height=9)
 #barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8,9,10,11,12)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'RC-TSnorm', 'RC-QTnorm', 'RC-MAnorm', 'POISP', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
-barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8,9,10)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-TSnorm', 'RC-QTnorm', 'RC-MAnorm', 'POISP', 'NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
+barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8)], main="paired_t_statistic_vec", xlab="Methods", names.arg=c('RC', 'POISP', 'RC-Z', 'NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 
 #barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 #box()
 dev.off()
 
 
-data0 =read.table('rna_rpk.pcsorted.txt', header=F)
-#data0 =read.table('rna_rpk.pcsorted.all12.txt', header=F)
 
-total_rpk = colSums(data0[,-1])
-
-rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*10000000))
-
-colnum = 2
-add=1
+library(LSD)
 png('check.png')
-d_raw = read.table(paste('tss_h3k4me3.pcsorted.', 'pknorm', '.txt', sep=''), header=F)
-plot(rna_tpm[,colnum], d_raw[,colnum+add], log='xy')
-print(cor(log2(rna_tpm[,colnum]), log2(d_raw[,colnum])))
+heatscatter(rna_tpm[used_id_rna_tpm,1],rna_tpm[used_id_rna_tpm,6])
+print(mean(rna_tpm[used_id_rna_tpm,1]))
+print(mean(rna_tpm[used_id_rna_tpm,6]))
+print(median(rna_tpm[used_id_rna_tpm,1]))
+print(median(rna_tpm[used_id_rna_tpm,6]))
+abline(0,1,col='red')
+dev.off()
+
+png('check1.png')
+heatscatter(log10(data0[,-1]+0.1)[used_id_rna_tpm,1],log10(data0[,-1]+0.1)[used_id_rna_tpm,6])
+abline(0,1,col='red')
+dev.off()
+
+
+heatscatter(d_raw[used_id_rna_tpm,1],d_raw[used_id_rna_tpm,6])
+abline(0,1,col='red')
+
+
+
+
+
+
+
+
+
+
+
+
+
+png('check_raw.png')
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'raw', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+#heatscatter(rna_tpm[rna_tpm[,colnum]!=0,colnum]-rna_tpm[rna_tpm[,colnum]!=0,colnum+1], d_raw[rna_tpm[,colnum]!=0,colnum]-d_raw[rna_tpm[,colnum]!=0,colnum+1], log='', main=toString(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson')))
+heatscatter(rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1], d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1], log='', main=toString(sum(((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])-(d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1]))^2)/sum((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])^2)) )
+
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson'))
+dev.off()
+
+png('check_qt.png')
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'qtnorm', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+#heatscatter(rna_tpm[rna_tpm[,colnum]!=0,colnum]-rna_tpm[rna_tpm[,colnum]!=0,colnum+1], d_raw[rna_tpm[,colnum]!=0,colnum]-d_raw[rna_tpm[,colnum]!=0,colnum+1], log='', main=toString(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson')))
+heatscatter(rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1], d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1], log='', main=toString(sum(((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])-(d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1]))^2)/sum((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])^2)) )
+
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson'))
+dev.off()
+
+
+png('check_ma.png')
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'manorm', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+#heatscatter(rna_tpm[rna_tpm[,colnum]!=0,colnum]-rna_tpm[rna_tpm[,colnum]!=0,colnum+1], d_raw[rna_tpm[,colnum]!=0,colnum]-d_raw[rna_tpm[,colnum]!=0,colnum+1], log='', main=toString(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson')))
+heatscatter(rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1], d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1], log='', main=toString(sum(((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])-(d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1]))^2)/sum((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])^2)) )
+
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson'))
+dev.off()
+
+png('check_ts.png')
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'trnorm', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+#heatscatter(rna_tpm[rna_tpm[,colnum]!=0,colnum]-rna_tpm[rna_tpm[,colnum]!=0,colnum+1], d_raw[rna_tpm[,colnum]!=0,colnum]-d_raw[rna_tpm[,colnum]!=0,colnum+1], log='', main=toString(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson')))
+heatscatter(rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1], d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1], log='', main=toString(sum(((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])-(d_raw[used_id_rna_tpm,colnum]-d_raw[used_id_rna_tpm,colnum+1]))^2)/sum((rna_tpm[used_id_rna_tpm,colnum]-rna_tpm[used_id_rna_tpm,colnum+1])^2)) )
+
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum])-rna_tpm[,colnum+1], (d_raw[,colnum])-d_raw[,colnum+1], method='pearson'))
+dev.off()
+
+
+
+
+
+png('check1.png')
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'pknorm', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+plot(rna_tpm[,colnum], d_raw[,colnum], log='')
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum]), (d_raw[,colnum])))
 dev.off()
 
 png('check2.png')
-d_raw = read.table(paste('tss_h3k4me3.pcsorted.', 'raw', '.txt', sep=''), header=F)
-plot(rna_tpm[,colnum], d_raw[,colnum+add], log='xy')
-print(cor(log2(rna_tpm[,colnum]), (d_raw[,colnum])))
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'raw', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+plot(rna_tpm[,colnum], d_raw[,colnum], log='')
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum]+0.1), (d_raw[,colnum]+0.1)))
+dev.off()
+
+
+
+png('check1r.png')
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'pknorm', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+plot(rna_tpm[,colnum], d_raw[,colnum+add], log='')
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum]+0.1), (d_raw[,colnum]+0.1)))
+dev.off()
+
+png('check2r.png')
+d_raw = log10(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', 'raw', '.txt', sep=''), header=F))+0.1)
+d_raw = (d_raw - mean(d_raw))/sd(d_raw)
+plot(rna_tpm[,colnum], d_raw[,colnum+add], log='')
+abline(0,1,col='red')
+print(cor((rna_tpm[,colnum]+0.1), (d_raw[,colnum]+0.1)))
 dev.off()
 
 #for (i in c(1:11)){
