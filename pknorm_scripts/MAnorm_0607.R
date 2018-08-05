@@ -64,13 +64,13 @@ sig1_binary = 10^(-sig1) <= 0.001
 sig2_binary = 10^(-sig2) <= 0.001
 
 #sig1_binary = p.adjust(10^(-sig1),'fdr') < 0.05
-if (sum(sig1_binary)<as.integer(dim(sig1)[1]/100)){
-	pk1_lim = sort(sig2)[length(sig1)-as.integer(dim(sig1)[1]/100)]
+if (sum(sig1_binary)<as.integer(length(sig1)/100)){
+	pk1_lim = sort(sig2)[length(sig1)-as.integer(length(sig1)/100)]
 	sig1_binary = sig1 >= pk1_lim
 }
 #sig2_binary = p.adjust(10^(-sig2),'fdr') < 0.05
-if (sum(sig2_binary)<as.integer(dim(sig1)[1]/100)){
-	pk2_lim = sort(sig2)[length(sig2)-as.integer(dim(sig1)[1]/100)]
+if (sum(sig2_binary)<as.integer(length(sig1)/100)){
+	pk2_lim = sort(sig2)[length(sig2)-as.integer(length(sig1)/100)]
 	sig2_binary = sig2 >= pk2_lim
 }
 
