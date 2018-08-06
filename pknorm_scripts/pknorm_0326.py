@@ -53,17 +53,23 @@ def p_adjust(pvalue, method):
 
 ################################################################################################
 ### NewtonRaphsonMethod
-def NewtonRaphsonMethod(sig1_pk,sig1_bg, sig2_pk,sig2_bg, A,B, moment, converge_thresh, numIterations):
+def NewtonRaphsonMethod(sig1_pk,sig1_bg, sig2_pk,sig2_bg, upperlim, A,B, moment, converge_thresh, numIterations):
 	sig1_pk_mean = np.mean(sig1_pk**moment)
 	sig1_bg_mean = np.mean(sig1_bg**moment)
 
 	for i in range(0, numIterations):
-		fb = sig1_bg_mean * np.mean(sig2_pk**(moment*B)) - sig1_pk_mean * np.mean(sig2_bg**(moment*B))
-		dfb = moment * sig1_bg_mean * np.mean(np.log(sig2_pk) * sig2_pk**(moment*B)) - moment * sig1_pk_mean * np.mean(np.log(sig2_bg) * sig2_bg**(moment*B))
+		sig2_pk_transformed = sig2_pk**(moment*B)
+		sig2_bg_transformed = sig2_bg**(moment*B)
+		sig2_pk_transformed[sig2_pk_transformed>upperlim] = upperlim
+		sig2_bg_transformed[sig2_bg_transformed>upperlim] = upperlim
+		fb = sig1_bg_mean * np.mean(sig2_pk_transformed) - sig1_pk_mean * np.mean(sig2_bg_transformed)
+		dfb = moment * sig1_bg_mean * np.mean(np.log(sig2_pk) * sig2_pk_transformed) - moment * sig1_pk_mean * np.mean(np.log(sig2_bg) * sig2_bg_transformed)
 
 		### next step
-		B = B - fb / dfb	
-		A = sig1_bg_mean / np.mean(sig2_bg**(moment*B))
+		B = B - fb / dfb
+		sig2_bg_transformed = sig2_bg**(moment*B)
+		sig2_bg_transformed[sig2_bg_transformed>upperlim] = upperlim
+		A = sig1_bg_mean / np.mean(sig2_bg_transformed)
 
 		print("Iteration %d | dFB: %f" % (i, dfb))
 		print([A,B])
@@ -195,7 +201,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print('added small number: '+str(small_num))
 	### get transformation factor
 
-	AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, 1.0, 2.0, moment, 1e-5, 500)
+	AB = NewtonRaphsonMethod(sig1_cpk+small_num,sig1_cbg+small_num, sig2_cpk+small_num,sig2_cbg+small_num, upperlim, 1.0, 2.0, moment, 1e-5, 500)
 	A=AB[0]
 	B=AB[1]
 	print('transformation: '+'B: '+str(B)+'; A: '+str(A))
