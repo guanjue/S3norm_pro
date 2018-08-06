@@ -1,16 +1,92 @@
 
-data0 =read.table('rna_rpk.pcsorted.txt', header=F)
+#data0 =read.table('rna_rpk.pcsorted.txt', header=F)
 #data0 =read.table('rna_rpk.pcsorted.all12.txt', header=F)
 
-total_rpk = colSums(data0[,-1])
+library(edgeR)
+library(seewave)
+library(MASS)
+library(RColorBrewer)
+library(ggplot2)
+library(ggpubr)
+library(LSD)
 
-rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*10000000))
+d0 = read.table('rnaHtseqCountsall_replicate_merge.pcsorted.txt', header=FALSE)
+d0_sig = d0[,-c(1,3)]
+regions = read.table('gencode.vM4.annotation.pc.sorted.bed', header=FALSE)
+regions_length = regions[,3]-regions[,2]
+ct_list = c('CFU_E_ad', 'CMP', 'ERY_ad', 'GMP', 'MK_imm_ad', 'LSK_BM', 'MEP', 'MONO_BM', 'NEU', 'ER4', 'G1E')
+colnames(d0_sig) = ct_list
+dgList <- DGEList(counts=d0_sig, genes=d0[,1])
+
+dgList <- calcNormFactors(dgList, method="TMM")
+
+dgList_rpkm = rpkm(dgList, gene.length = regions_length)
+#dgList_rpkm = cpm(dgList)
+
+rna_tpm = dgList_rpkm
+
+png('test.png')
+heatscatter(rna_tpm[,1],rna_tpm[,6], log='xy')
+abline(0,1,col='red')
+dev.off()
+
+#d = read.table('rna_rpk.pcsorted.txt', header=FALSE)
+#d_sig = d[,-c(1)]
+#ct_list = c('CFU_E_ad', 'CMP', 'ERY_ad', 'GMP', 'MK_imm_ad', 'LSK_BM', 'MEP', 'MONO_BM', 'NEU', 'ER4', 'G1E')
+#colnames(d_sig) = ct_list
+#dgList <- DGEList(counts=d_sig, genes=d[,1])
+### filter genes
+#countsPerMillion <- cpm(dgList)
+#countCheck <- countsPerMillion > 1
+#head(countCheck)
+#keep <- which(rowSums(countCheck) >= 2)
+#dgList <- dgList[keep,]
+#summary(cpm(dgList)) #compare this to the original summary
+
+#dgList <- calcNormFactors(dgList, method="TMM")
+#countsPerMillion_filter <- cpm(dgList)
+
+
+#library(LSD)
+#heatscatter(countsPerMillion_filter[,1],countsPerMillion_filter[,6], log='xy')
+#abline(0,1,col='red')
+
+#heatscatter(data0[,2],d_sig[,1], log='xy')
+#abline(0,1,col='red')
+#heatscatter(data0[,3],d[,3], log='xy')
+#abline(0,1,col='red')
+#heatscatter(data0[,4],d[,4], log='xy')
+#abline(0,1,col='red')
+
+
+#used_id_rna_tpm = keep
+
+#rna_tpm = (countsPerMillion_filter)# / regions_length *1000)
+
+#heatscatter(dgList_rpkm[,1],dgList_rpkm[,2], log='xy')
+#abline(0,1,col='red')
+
+#heatscatter(countsPerMillion[,1],data0[,2], log='xy')
+#abline(0,1,col='red')
+#heatscatter(countsPerMillion[,1],countsPerMillion_filter[,1], log='xy')
+#abline(0,1,col='red')
+
+#heatscatter(rna_tpm[,1]-rna_tpm[,6], d_raw[,1]-d_raw[,6], log='xy')
+#abline(0,1,col='red')
+
+#heatscatter(d_sig[,1]-d_sig[,6], d_raw[,1]-d_raw[,6], log='xy')
+#abline(0,1,col='red')
+
+#total_rpk = colSums(data0[,-1])
+
+#rna_tpm = t(apply(data0[,-1], 1, function(x) x/total_rpk*10000000))
 
 rna_tpm_max = apply(rna_tpm, 1, max)
-tpm_lim=5
+tpm_lim=-1.5
 pdf('hist_rna_tpm_max.pdf')
 hist(log2(rna_tpm_max), breaks=50)
 abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
+box()
 dev.off()
 
 used_id_rna_tpm = ( (log2(rna_tpm_max+0.1)>tpm_lim)  ) >0
@@ -70,6 +146,7 @@ for (i in c(1:11)){
 				hist_dif = d_raw[used_id_rna_tpm,i]-d_raw[used_id_rna_tpm,j]
 				hist_dif_shuffle = d_raw[used_id_rna_tpm,shuffle_id1[i]]-d_raw[used_id_rna_tpm,shuffle_id1[j]]
 				perform = (sum((rna_dif - hist_dif)^2)) / rss0
+				#perform = 1 - sum((rna_dif - hist_dif)^2) / sum((rna_dif - mean(rna_dif))^2)
 				perform_shuf = (sum((rna_dif - hist_dif_shuffle)^2)) / rss0
 				cor0 = cor(rna_dif, hist_dif, method = 'pearson')
 				cor0_sp = cor(rna_dif, hist_dif, method = 'spearman')

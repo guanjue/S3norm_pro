@@ -6,47 +6,67 @@ library(ggplot2)
 library(ggpubr)
 library(LSD)
 
-d = read.table('rnaHtseqCountsall_replicate_merge.pcsorted.txt', header=FALSE)
-d_sig = d[,-c(1,3)]
-ct_list = c('CFU_E_ad', 'CMP', 'ERY_ad', 'GMP', 'MK_imm_ad', 'LSK_BM', 'MEP', 'MONO_BM', 'NEU', 'ER4', 'G1E')
-colnames(d_sig) = ct_list
-dgList <- DGEList(counts=d_sig, genes=d[,1])
-### filter genes
-countsPerMillion <- cpm(dgList)
-countCheck <- countsPerMillion > 1
-head(countCheck)
-keep <- which(rowSums(countCheck) >= 2)
-#dgList <- dgList[keep,]
-#summary(cpm(dgList)) #compare this to the original summary
 
-dgList <- calcNormFactors(dgList, method="TMM")
-countsPerMillion_filter <- cpm(dgList)
+library(edgeR)
+library(seewave)
+library(MASS)
+library(RColorBrewer)
+library(ggplot2)
+library(ggpubr)
+library(LSD)
 
+d0 = read.table('rnaHtseqCountsall_replicate_merge.pcsorted.txt', header=FALSE)
+d0_sig = d0[,-c(1,3)]
+#d0 = read.table('rna_rpk.pcsorted.txt', header=FALSE)
+#d0_sig = d0[,-c(1)]
 regions = read.table('gencode.vM4.annotation.pc.sorted.bed', header=FALSE)
 regions_length = regions[,3]-regions[,2]
+ct_list = c('CFU_E_ad', 'CMP', 'ERY_ad', 'GMP', 'MK_imm_ad', 'LSK_BM', 'MEP', 'MONO_BM', 'NEU', 'ER4', 'G1E')
+colnames(d0_sig) = ct_list
+dgList <- DGEList(counts=d0_sig, genes=d0[,1])
+cpm1 = cpm(dgList)
 
-library(LSD)
-heatscatter(countsPerMillion_filter[,1],countsPerMillion_filter[,6], log='xy')
+dgList_rpkm = rpkm(dgList, gene.length = regions_length)
+#dgList_rpkm = cpm(dgList)
+#dgList_rpkm = t(apply(dgList$counts, 1, function(x) x/(dgList$samples$norm.factors)))
+print(dim(dgList_rpkm))
+
+rna_tpm = dgList_rpkm
+
+png('test.png')
+heatscatter(rna_tpm[,1],rna_tpm[,6], log='xy')
 abline(0,1,col='red')
+dev.off()
 
-heatscatter(data0[,2],d_sig[,1], log='xy')
-abline(0,1,col='red')
-heatscatter(data0[,3],d[,3], log='xy')
-abline(0,1,col='red')
-heatscatter(data0[,4],d[,4], log='xy')
-abline(0,1,col='red')
+#heatscatter(data0[,2],d_sig[,1], log='xy')
+#abline(0,1,col='red')
+#heatscatter(data0[,3],d[,3], log='xy')
+#abline(0,1,col='red')
+#heatscatter(data0[,4],d[,4], log='xy')
+#abline(0,1,col='red')
 
 
-used_id_rna_tpm = keep
+rna_tpm_max = apply(rna_tpm, 1, max)
+tpm_lim=-1.5
+sd_mean_lim = 1
+non0_count_lim = 4
+pdf('hist_rna_tpm_max.pdf')
+hist(log2(rna_tpm_max), breaks=50)
+abline(v=tpm_lim, col='red', lwd=1.5, lty=3)
+dev.off()
 
-rna_tpm = (countsPerMillion_filter / regions_length)[keep,]
+small_num = 0.1
 
-methods = c('rcnorm', 'poisnorm', 'rcznorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
+keep2 = (rna_tpm_max > 2^(tpm_lim))
+used_id_rna_tpm = keep2
+print(sum(used_id_rna_tpm))
+#rna_tpm = log2(rna_tpm[used_id_rna_tpm,]+small_num)
+rna_tpm = log2(rna_tpm[keep2,]+small_num)
+methods = c('rcnorm', 'poisnorm', 'rcznorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm0')
+
 #methods = c('rcnorm', 'poisnorm', 'rcznorm', 'poisnorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
 
 #methods = c('rcnorm', 'rcznorm', 'raw', 'znorm', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
-
-small_num = 0.1
 
 
 cor_0_matrix = c()
@@ -59,24 +79,24 @@ for (m in methods){
 	print(m)
 	set.seed(1)
 	bw_used = 0.1
-	cor_method = 'spearman'
+	cor_method = 'pearson'
 	#small_num = 0.1
 	#shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
 	if (m!='rcznorm'){
-		d_raw = (as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F))+small_num)
+		d_raw = log2(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F))+small_num)
 		d_raw = ((d_raw) - mean((d_raw))) / sd((d_raw))
 	} else {
 		d_raw = (as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)))
 	}
 	print(summary(d_raw))
-	d_raw = d_raw[keep,]
+	d_raw = (d_raw[used_id_rna_tpm,])
 	
 	#d_raw = log2(d_raw+small_num)
 	sig_mat = cbind(rna_tpm, d_raw)
 	cor_0 = apply(sig_mat, 1, function(x) cor((x[1:11]),(x[12:22]), method=cor_method))
 	shuffle_id = sample(dim(rna_tpm)[2],dim(rna_tpm)[2])
-	#d_raw_shuffle = d_raw[,shuffle_id]
-	d_raw_shuffle = t(apply(d_raw, 1, function(x) x[sample(dim(rna_tpm)[2],dim(rna_tpm)[2])]))
+	d_raw_shuffle = d_raw[,shuffle_id]
+	#d_raw_shuffle = t(apply(d_raw, 1, function(x) x[sample(dim(rna_tpm)[2],dim(rna_tpm)[2])]))
 	cor_0_shuffle = apply(cbind(rna_tpm, d_raw_shuffle), 1, function(x) cor((x[1:11]),(x[12:22]), method=cor_method))
 	#d_raw_bg = read.table(paste('tss_h3k4me3.pcsorted.', m, '.1000kb.txt', sep=''), header=F)
 	#cor_0_bg = apply(cbind(rna_tpm, d_raw_bg), 1, function(x) cor((x[1:11]),(x[12:22]), method=cor_method))
@@ -100,8 +120,10 @@ for (m in methods){
 }
 
 
+heatscatter(d_raw[,1],d_raw[,6], log='')
+abline(0,1,col='red')
 
-
+boxplot(d_raw)
 
 hist(rna_tpm[cor_0>0.5,])
 
