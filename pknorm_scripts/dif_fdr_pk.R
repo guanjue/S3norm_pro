@@ -11,6 +11,7 @@ data_p_fdr = p.adjust(data[,4], 'fdr')
 thresh_list = c(0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001)
 
 for (p_lim in thresh_list){
+	print(p_lim)
 	data_pk = data[data_p_fdr<p_lim,]
 	write.table(data_pk, paste(output_bed, '.', toString(p_lim), '.bed', sep=''), sep='\t', quote=FALSE, col.names=FALSE, row.names=FALSE)
 }
