@@ -48,6 +48,7 @@ small_num = 0.01
 random_sample_num = 1000000
 upperlim = 1000
 lowerlim = 0
+rank_lim = 0.001
 ct = unlist(strsplit(input_sig2, "[.]"))[1]
 
 sig1 = scan(input_sig1)
@@ -64,13 +65,13 @@ sig1_binary = 10^(-sig1) <= 0.001
 sig2_binary = 10^(-sig2) <= 0.001
 
 #sig1_binary = p.adjust(10^(-sig1),'fdr') < 0.05
-if (sum(sig1_binary)<as.integer(length(sig1)/100)){
-	pk1_lim = sort(sig2)[length(sig1)-as.integer(length(sig1)/100)]
+if (sum(sig1_binary)<as.integer(length(sig1)*rank_lim)){
+	pk1_lim = sort(sig2)[length(sig1)-as.integer(length(sig1)*rank_lim)]
 	sig1_binary = sig1 >= pk1_lim
 }
 #sig2_binary = p.adjust(10^(-sig2),'fdr') < 0.05
-if (sum(sig2_binary)<as.integer(length(sig1)/100)){
-	pk2_lim = sort(sig2)[length(sig2)-as.integer(length(sig1)/100)]
+if (sum(sig2_binary)<as.integer(length(sig1)*rank_lim)){
+	pk2_lim = sort(sig2)[length(sig2)-as.integer(length(sig1)*rank_lim)]
 	sig2_binary = sig2 >= pk2_lim
 }
 

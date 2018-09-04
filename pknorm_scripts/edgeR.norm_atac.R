@@ -16,12 +16,12 @@ library(ggpubr)
 library(LSD)
 
 d0 = read.table('rnaHtseqCountsall_replicate_merge.pcsorted.txt', header=FALSE)
-d0_sig = d0[,-c(1,3)]
+d0_sig = d0[,-c(1)]
 #d0 = read.table('rna_rpk.pcsorted.txt', header=FALSE)
 #d0_sig = d0[,-c(1)]
 regions = read.table('gencode.vM4.annotation.pc.sorted.bed', header=FALSE)
 regions_length = regions[,3]-regions[,2]
-ct_list = c('CFU_E_ad', 'CMP', 'ERY_ad', 'GMP', 'MK_imm_ad', 'LSK_BM', 'MEP', 'MONO_BM', 'NEU', 'ER4', 'G1E')
+ct_list = c('CFUE', 'CFUMK', 'CMP', 'ERY', 'GMP', 'iMK', 'LSK', 'MEP', 'MON', 'NEU', 'ER4', 'G1E')
 colnames(d0_sig) = ct_list
 dgList <- DGEList(counts=d0_sig, genes=d0[,1])
 cpm1 = cpm(dgList)
@@ -63,7 +63,7 @@ used_id_rna_tpm = keep2
 print(sum(used_id_rna_tpm))
 #rna_tpm = log2(rna_tpm[used_id_rna_tpm,]+small_num)
 rna_tpm = log2(rna_tpm[keep2,]+small_num)
-methods = c('rcnorm', 'poisnorm', 'rcznorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm0')
+methods = c('raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
 
 #methods = c('rcnorm', 'poisnorm', 'rcznorm', 'poisnorm', 'raw', 'trnorm', 'qtnorm', 'manorm', 'pknorm')
 
@@ -84,10 +84,10 @@ for (m in methods){
 	#small_num = 0.1
 	#shuffle_id = sample(dim(rna_tpm)[1],dim(rna_tpm)[1])
 	if (m!='rcznorm'){
-		d_raw = log2(as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F))+small_num)
+		d_raw = log2(as.matrix(read.table(paste('tss_atac.pcsorted.', m, '.txt', sep=''), header=F))+small_num)
 		d_raw = ((d_raw) - mean((d_raw))) / sd((d_raw))
 	} else {
-		d_raw = (as.matrix(read.table(paste('tss_h3k4me3.pcsorted.', m, '.txt', sep=''), header=F)))
+		d_raw = (as.matrix(read.table(paste('tss_atac.pcsorted.', m, '.txt', sep=''), header=F)))
 	}
 	print(summary(d_raw))
 	d_raw = (d_raw[used_id_rna_tpm,])
@@ -106,7 +106,7 @@ for (m in methods){
 	paired_t = t.test(cor_0, cor_0_shuffle, paired=TRUE, alternative = 'greater')
 	paired_t_statistic = paired_t$statistic	
 	print(summary(cor_0[!is.na(cor_0)]))
-	png(paste('tss_h3k4me3.pcsorted.', m, '.png', sep=''))
+	png(paste('tss_atac.pcsorted.', m, '.png', sep=''))
 	plot(density(cor_0[!is.na(cor_0)], bw=bw_used), col='green', main=paste('Paired-t-test-statistic = ', toString(round(paired_t_statistic, digits=3)), '; ', 'KL-dist = ', toString(round(kl_dist_shuffle, digits=3)), sep=''), ylim=c(0,1.5))
 	print(mean(cor_0[!is.na(cor_0)]))
 	print(median(cor_0[!is.na(cor_0)]))
@@ -133,7 +133,7 @@ hist(rna_tpm)
 
 pdf('cor_0_KL-dist.pdf', width=20, height=9)
 #barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8,9,10,11,12)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'RC-TSnorm', 'RC-QTnorm', 'RC-MAnorm', 'POISP', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
-barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'POISP', 'RC-Z', 'NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
+barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 
 #barplot(kl_dist_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 #box()
@@ -141,7 +141,7 @@ dev.off()
 
 pdf('cor_0_paired_t_statistic_vec.pdf', width=20, height=9)
 #barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8,9,10,11,12)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'RC-TSnorm', 'RC-QTnorm', 'RC-MAnorm', 'POISP', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
-barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8)], main="paired_t_statistic_vec", xlab="Methods", names.arg=c('RC', 'POISP', 'RC-Z', 'NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
+barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8)], main="paired_t_statistic_vec", xlab="Methods", names.arg=c('NBP', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 
 #barplot(paired_t_statistic_vec[,c(1,2,3,4,5,6,7,8)], main="KL-dist", xlab="Methods", names.arg=c('RC', 'RC-Z', 'NBP', 'NBP-Z', 'NBP-TSnorm', 'NBP-QTnorm', 'NBP-MAnorm', 'NBP-PKnorm'))
 #box()
