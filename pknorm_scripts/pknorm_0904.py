@@ -178,7 +178,7 @@ def pknorm(sig1_wg_raw, sig2_wg_raw, moment, B_init, fdr_thresh, sample_num, ran
 	print(np.sum(peak_binary))
 
 	### background region (both == 0 in sig1 & sig2)
-	non0_lim = np.max([np.min(sig1[sig1[,0]>0,0]), np.min(sig1[sig2[,0]>0,0])])
+	non0_lim = np.max([np.min(sig1[sig1[:,0]>0, 0]), np.min(sig1[sig2[:,0]>0,0])])
 	bg_binary = (~(sig1_binary[:,0] | sig2_binary[:,0])) & (sig1_binary[:,0] >= non0_lim) & (sig2_binary[:,0] >= non0_lim)
 	print(np.sum(bg_binary))
 
