@@ -5,12 +5,14 @@ output = args[2]
 ylim_l = as.numeric(args[3])
 ylim_h = as.numeric(args[4])
 print(ylim_h)
-data = read.table(input_matrix, header=TRUE, sep='\t')
+data = read.table(input_matrix, header=FALSE, sep='\t')
 
 if (is.na(ylim_l)){
 	ylim_h = max(data[,-1])
 	ylim_l = min(data[,-1])
 }
+
+data[,1] = log10(data[,1])
 
 pdf(output)
 plot(data[,1], data[,4], pch=16, col='orchid1', ylim=c(ylim_l, ylim_h))
